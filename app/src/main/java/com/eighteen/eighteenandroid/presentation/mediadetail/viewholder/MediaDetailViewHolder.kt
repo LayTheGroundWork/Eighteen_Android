@@ -22,8 +22,7 @@ sealed class MediaDetailViewHolder(
         private var videoModel: MediaDetailModel.Video? = null
         override fun onBind(mediaDetailModel: MediaDetailModel) {
             videoModel = mediaDetailModel as? MediaDetailModel.Video
-            ImageLoader.get()
-                .loadUrl(imageView = binding.mvMedia.thumbnailView, url = mediaDetailModel.imageUrl)
+            binding.mvMedia.setThumbnailUrl(url = mediaDetailModel.imageUrl)
         }
 
         override fun getMediaInfo() = MediaInfo(

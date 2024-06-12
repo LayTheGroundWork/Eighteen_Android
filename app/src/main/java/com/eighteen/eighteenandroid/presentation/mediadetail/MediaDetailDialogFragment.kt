@@ -12,13 +12,16 @@ import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.eighteen.eighteenandroid.databinding.FragmentMediaDetailDialogBinding
 import com.eighteen.eighteenandroid.presentation.BaseDialogFragment
 import com.eighteen.eighteenandroid.presentation.common.media3.viewpager2.ViewPagerPlayerManager
+import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
+import com.eighteen.eighteenandroid.presentation.common.showReportDialog
+import com.eighteen.eighteenandroid.presentation.dialog.ReportDialogFragment
 import kotlinx.coroutines.launch
 
 /**
  * 미디어와 선택된 position을 공유하기 위해 호출하는 Fragment와 MediaDetailViewModel 공유 필요
  * Fragment.showDialogFragment로 직접 열어줘야 ViewModel공유 가능(parentFragment로 공유)
  */
-//TODO 열고 닫을 때 애니메이션 추가, 미디어 포지션 공유할지 기획 문의 필요 + 기획에 따라 포지션 초기화 필요
+//TODO 열고 닫을 때 애니메이션 추가
 class MediaDetailDialogFragment :
     BaseDialogFragment<FragmentMediaDetailDialogBinding>(FragmentMediaDetailDialogBinding::inflate) {
 
@@ -43,24 +46,21 @@ class MediaDetailDialogFragment :
         dialog?.window?.run {
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            //TODO 블러처리 리소스를 많이 잡아먹는 작업임 + 안드 12이상부터 작동(논의 필요)
-//            addFlags(FLAG_BLUR_BEHIND)
-//            attributes= attributes.apply{
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//                    blurBehindRadius = 20
-//                }
-//            }
         }
     }
 
     override fun initView() {
         initPlayerManager()
         bind {
-            ivBtnBack.setOnClickListener {
+            ivBtnClose.setOnClickListener {
                 dismiss()
             }
             ivBtnOption.setOnClickListener {
-                //TODO 옵션메뉴 추가(메인화면과 공유)
+                context?.let {
+                    showReportDialog(it) {
+                        showDialogFragment(ReportDialogFragment())
+                    }
+                }
             }
         }
         bindMediaPager()
