@@ -34,7 +34,7 @@
 
     <fragment
         android:id="@+id/fragmentProfileDetailFragment"
-        android:name="com.eighteen.eighteenandroid.presentation.profileDetail.ProfileDetailFragment"
+        android:name="com.eighteen.eighteenandroid.presentation.profiledetail.ProfileDetailFragment"
         android:label="fragment_profile_detail"
         tools:layout="@layout/fragment_profile_detail">
         <action

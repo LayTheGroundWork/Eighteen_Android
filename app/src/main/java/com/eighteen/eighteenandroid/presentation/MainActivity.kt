@@ -3,6 +3,7 @@ package com.eighteen.eighteenandroid.presentation
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.eighteen.eighteenandroid.R
@@ -38,10 +39,8 @@ class MainActivity : AppCompatActivity() {
 
         // 네비게이션 목적지 변경 시 바텀 네비게이션의 가시성 조정
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            binding.bottomNavigationBar.visibility =
-                if (destination.id == R.id.fragmentMain) View.VISIBLE else View.GONE
-            binding.toolbar.root.visibility =
-                if (destination.id == R.id.fragmentMain) View.VISIBLE else View.GONE
+            binding.bottomNavigationBar.isVisible = destination.id == R.id.fragmentMain
+            binding.toolbar.root.isVisible = destination.id == R.id.fragmentMain
         }
     }
 }

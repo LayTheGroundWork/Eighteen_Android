@@ -106,6 +106,9 @@ dependencies {
     //kotlin ext
     implementation("androidx.fragment:fragment-ktx:1.7.0")
 
+    //viewpager2
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+
     //media3
     val media3Version = "1.3.1"
     implementation("androidx.media3:media3-exoplayer:$media3Version")
