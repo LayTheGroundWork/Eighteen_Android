@@ -4,9 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpAction
+import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpEditMediaAction
+import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpMedia
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
 import com.eighteen.eighteenandroid.presentation.common.livedata.Event
+import com.eighteen.eighteenandroid.presentation.editmedia.model.EditMediaResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.util.Date
 import javax.inject.Inject
 
@@ -23,11 +28,17 @@ class SignUpViewModel @Inject constructor() : ViewModel(), SignUpViewModelConten
     private val _progressLiveData = MutableLiveData<Int?>(null)
     val progressLiveData: LiveData<Int?> = _progressLiveData
 
+    private val _editMediaActionEventLiveData = MutableLiveData<Event<SignUpEditMediaAction>>()
+    val editMediaActionEventLiveData: LiveData<Event<SignUpEditMediaAction>> =
+        _editMediaActionEventLiveData
+
     override var id: String = ""
     override var nickName: String = ""
     override var birth: Date = Date()
     override var school: String = ""
-    override var medias: List<String> = emptyList()
+
+    private val _mediasStateFlow = MutableStateFlow<List<SignUpMedia>>(emptyList())
+    override val mediasStateFlow: StateFlow<List<SignUpMedia>> = _mediasStateFlow
 
     fun actionToPrevPage() {
         _actionEventLiveData.value = Event(SignUpAction.PREV)
@@ -41,10 +52,46 @@ class SignUpViewModel @Inject constructor() : ViewModel(), SignUpViewModelConten
         _nextButtonLiveData.value = signUpNextButtonModel
     }
 
+    override fun setEditMediaAction(editMediaAction: SignUpEditMediaAction) {
+        _editMediaActionEventLiveData.value = Event(editMediaAction)
+    }
+
     /**
      * @param progress : 진행도 표시 값 (0~100) null일 경우 gone
      */
     fun setProgress(progress: Int?) {
         _progressLiveData.value = progress
     }
+
+    fun addMediaResult(mediaResult: EditMediaResult) {
+        val signUpMedia = when (mediaResult) {
+            is EditMediaResult.Image -> SignUpMedia.Image(
+                imageBitmap = mediaResult.imageBitmap,
+                tags = mediaResult.tags
+            )
+            is EditMediaResult.Video -> SignUpMedia.Video(
+                thumbnailBitmap = mediaResult.thumbnailBitmap,
+                tags = mediaResult.tags
+            )
+        }
+        _mediasStateFlow.value = _mediasStateFlow.value.toMutableList().apply {
+            add(signUpMedia)
+        }
+    }
+
+    override fun clearMediaResultStateFlow() {
+        _mediasStateFlow.value = emptyList()
+    }
+
+    override fun onCleared() {
+        _mediasStateFlow.value.forEach {
+            val targetBitmap = when (it) {
+                is SignUpMedia.Image -> it.imageBitmap
+                is SignUpMedia.Video -> it.thumbnailBitmap
+            }
+            targetBitmap.recycle()
+        }
+        super.onCleared()
+    }
+
 }

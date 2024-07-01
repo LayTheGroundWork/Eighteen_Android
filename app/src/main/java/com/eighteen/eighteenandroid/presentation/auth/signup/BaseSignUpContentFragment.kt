@@ -11,6 +11,7 @@ import androidx.viewbinding.ViewBinding
 import com.eighteen.eighteenandroid.presentation.BaseFragment
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpAction
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
+import com.eighteen.eighteenandroid.presentation.common.livedata.EventObserver
 
 /**
  * 회원가입 내용 fragment, 네비게이션 호출을 위해 반드시 해당클래스 구현해서 써야 함
@@ -52,14 +53,12 @@ abstract class BaseSignUpContentFragment<VB : ViewBinding>(bindingFactory: (Layo
     }
 
     private fun initActionObserver() {
-        signUpViewModel.actionEventLiveData.observe(viewLifecycleOwner) {
-            it.getContentIfNotHandled()?.let { action ->
-                when (action) {
-                    SignUpAction.NEXT -> onMoveNextPageAction.invoke()
-                    SignUpAction.PREV -> onMovePrevPageAction.invoke()
-                }
+        signUpViewModel.actionEventLiveData.observe(viewLifecycleOwner, EventObserver { action ->
+            when (action) {
+                SignUpAction.NEXT -> onMoveNextPageAction.invoke()
+                SignUpAction.PREV -> onMovePrevPageAction.invoke()
             }
-        }
+        })
     }
 
     private fun getContainerFragment(): Fragment? {

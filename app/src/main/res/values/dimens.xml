@@ -2,4 +2,8 @@
 <resources>
     <dimen name="media_detail_header_height">80dp</dimen>
     <dimen name="sign_up_header_height">80dp</dimen>
+
+    <!-- edit media -->
+    <dimen name="edit_media_header_height">80dp</dimen>
+    <dimen name="edit_media_video_timeline_height">30dp</dimen>
 </resources>

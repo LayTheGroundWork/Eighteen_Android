@@ -111,4 +111,7 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:$media3Version")
     implementation("androidx.media3:media3-ui:$media3Version")
     implementation("androidx.media3:media3-common:$media3Version")
+
+    //ffmpeg
+    implementation("com.arthenica:ffmpeg-kit-full:6.0-2")
 }

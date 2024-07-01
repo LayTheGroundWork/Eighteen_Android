@@ -16,4 +16,6 @@
     <color name="grey_01">#9F9F9F</color>
     <color name="grey_02">#555555</color>
     <color name="grey_03">#E6E6E6</color>
+    <color name="dim">#88000000</color>
+    <color name="red">#EA333E</color>
 </resources>

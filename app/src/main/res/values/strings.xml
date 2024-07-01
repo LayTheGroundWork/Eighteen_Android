@@ -38,4 +38,6 @@
     <string name="report_completed_title">신고가 완료되었습니다.</string>
     <string name="report_completed_content">해당 프로필은\n더이상 표시되지 않아요</string>
     <string name="report_completed_button_title">알겠어요!</string>
+
+    <string name="time_min_sec">"%02d:%02d"</string>
 </resources>

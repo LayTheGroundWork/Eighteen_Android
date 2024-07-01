@@ -24,6 +24,10 @@ open class PlayerManager(
     private val playingInfoMap = HashMap<String, PlayingInfo>()
     protected var targetMediaInfo: MediaInfo? = null
 
+    val currentPosition get() = player.currentPosition
+    val duration get() = player.duration
+    val isPlaying get() = player.isPlaying
+
     private val playerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             when (playbackState) {
@@ -110,6 +114,10 @@ open class PlayerManager(
 
     fun removePlayingInfo(key: String) {
         playingInfoMap.remove(key)
+    }
+
+    fun seekTo(positionMs: Long) {
+        player.seekTo(positionMs)
     }
 
     private fun release() {

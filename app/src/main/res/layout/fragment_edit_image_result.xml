@@ -3,17 +3,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/black">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMedias"
+    <include
+        android:id="@+id/inHeader"
+        layout="@layout/view_edit_media_header"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- TODO 디자인 가이드 적용 -->
+    <ImageView
+        android:id="@+id/ivResultImage"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:orientation="horizontal"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_sign_up_media" />
+        tools:background="@color/white" />
 </androidx.constraintlayout.widget.ConstraintLayout>
