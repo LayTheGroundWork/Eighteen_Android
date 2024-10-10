@@ -185,4 +185,9 @@
     <string name="text_teen_recent_join">최근 가입한\nTEEN</string>
     <string name="text_teen_same_school">같은 학교인\nTEEN</string>
 
+    <!-- Ranking-->
+    <string name="ranking_banner_title">Ranking</string>
+    <string name="ranking_banner_description">투표해보세요</string>
+
+
 </resources>
