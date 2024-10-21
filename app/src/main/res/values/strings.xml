@@ -193,4 +193,8 @@
 
     <!-- Badge Detail -->
     <string name="badge_detail_title">내 배지</string>
+
+    <!-- Search -->
+    <string name="hint_search">친구를 검색해보세요</string>
+    <string name="search_history_header">검색 기록</string>
 </resources>
