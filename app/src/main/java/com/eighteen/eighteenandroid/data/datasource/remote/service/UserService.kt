@@ -24,4 +24,13 @@ interface UserService {
 
     @POST("/v1/api/user/duplication-check")
     suspend fun postDuplicationCheck(@Query("uniqueId") uniqueId: String): Response<ApiResult<Boolean>>
+
+    @POST("/v1/api/user/sign-in")
+    suspend fun postLogin(@Query("phoneNumber") phoneNumber: String): Response<ApiResult<String>>
+
+    @GET("/v1/api/{userType}/find-all")
+    suspend fun getAllUser(@Path("userType") userType: String, @Query("page") page: Int, @Query("size") size: Int): Response<ApiResult<List<UserResponse>>>
+
+    @GET("/v1/api/{userType}/find-all-by-category/{category}")
+    suspend fun getCategoryUser(@Path("userType") userType: String, @Path("category") category: String, @Query("page") page: Int, @Query("size") size: Int)
 }

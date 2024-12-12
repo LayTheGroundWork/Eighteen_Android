@@ -10,9 +10,8 @@ object UserMapper {
                 userImage = userImage,
                 userId = userId,
                 userName = name,
-                userAge = age,
-                userSchoolName = userSchoolName,
-                tag = tag
+                userAge = birthDate, /* TODO. 생년월일로 나이 구하기 */
+                userSchoolName = schoolName
             )
         }
 }

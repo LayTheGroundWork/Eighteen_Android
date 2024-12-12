@@ -63,7 +63,6 @@ class TeenListFragment: BaseFragment<FragmentTeenListBinding>(FragmentTeenListBi
                         userName = "김 에스더",
                         userAge = "16",
                         userSchoolName = "서울 중학교",
-                        tag = "운동"
                     ),
                     User(
                         userImage = "https://cdn.newsculture.press/news/photo/202308/529742_657577_5726.jpg",
@@ -71,7 +70,6 @@ class TeenListFragment: BaseFragment<FragmentTeenListBinding>(FragmentTeenListBi
                         userName = "김 에스더",
                         userAge = "16",
                         userSchoolName = "부천 중학교",
-                        tag = "스터디"
                     ),
                     User(
                         userImage = "https://mblogthumb-phinf.pstatic.net/MjAyMTEwMzFfMTY1/MDAxNjM1NjUzMTI2NjI3.xXYQteLLoWLKcR9YnXS0Hk_y-DInauMzF25g7FxlcScg.2Y-neBBMVoP2IhcwzX2Zy2HB2d8EnM_cY76FVLuk_1Yg.JPEG.ssun2415/IMG_4148.jpg?type=w800",
@@ -79,7 +77,6 @@ class TeenListFragment: BaseFragment<FragmentTeenListBinding>(FragmentTeenListBi
                         userName = "김 에스더",
                         userAge = "16",
                         userSchoolName = "인천 중학교",
-                        tag = "프로젝트"
                     )
                 )
             )

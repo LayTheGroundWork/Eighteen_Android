@@ -395,8 +395,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                         userId = "1",
                         userName = "김 에스더",
                         userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
+                        userSchoolName = "서울 중학교"
                     )
                 ),
                 MainItem.UserView(
@@ -406,7 +405,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                         userName = "김 에스더",
                         userAge = "16",
                         userSchoolName = "서울 중학교",
-                        tag = "운동"
                     )
                 ),
                 MainItem.UserView(
@@ -415,8 +413,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                         userId = "3",
                         userName = "김 에스더",
                         userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
+                        userSchoolName = "서울 중학교"
                     )
                 )
             )
@@ -455,8 +452,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                         userId = "1",
                         userName = "김 에스더",
                         userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
+                        userSchoolName = "서울 중학교"
                     )
                 ),
                 MainItem.UserView(
@@ -466,7 +462,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                         userName = "김 에스더",
                         userAge = "16",
                         userSchoolName = "서울 중학교",
-                        tag = "운동"
                     )
                 ),
                 MainItem.UserView(
@@ -475,8 +470,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                         userId = "3",
                         userName = "김 에스더",
                         userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
+                        userSchoolName = "서울 중학교"
                     )
                 )
             )
