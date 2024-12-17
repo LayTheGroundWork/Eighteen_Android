@@ -43,4 +43,7 @@ abstract class BaseDialogFragment<T : ViewBinding>(private val bindingFactory: (
     protected inline fun bind(block: T.() -> Unit) {
         binding.apply(block)
     }
+
+    fun requestWithRequiredLogin(request: () -> Unit) =
+        (activity as? MainActivity)?.requestWithRequiredLogin(request)
 }

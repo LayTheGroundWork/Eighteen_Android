@@ -38,4 +38,7 @@ abstract class BaseBottomSheetDialogFragment<T : ViewBinding>(private val bindin
     protected inline fun bind(block: T.() -> Unit) {
         binding.apply(block)
     }
+
+    fun requestWithRequiredLogin(request: () -> Unit) =
+        (activity as? MainActivity)?.requestWithRequiredLogin(request)
 }

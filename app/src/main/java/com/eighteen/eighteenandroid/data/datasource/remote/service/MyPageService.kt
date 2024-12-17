@@ -14,5 +14,5 @@ interface MyPageService {
     suspend fun postMyPageUpdate(@Body myProfileRequest: MyProfileRequest): Response<ApiResult<String?>>
 
     @GET("/v1/api/my-page")
-    suspend fun getMyPage(): Response<ApiResult<ProfileResponse>>
+    suspend fun getMyPage(): Response<ApiResult<ProfileResponse?>>
 }

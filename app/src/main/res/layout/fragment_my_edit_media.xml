@@ -50,7 +50,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/my_profile_edit_media_guide"
+                android:text="@string/sign_up_add_media_hint"
                 android:textColor="@color/grey_01"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

@@ -15,7 +15,7 @@ import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentEditIntroduceBinding
 import com.eighteen.eighteenandroid.domain.model.createMbtiOrNull
 import com.eighteen.eighteenandroid.presentation.BaseFragment
-import com.eighteen.eighteenandroid.presentation.LoginViewModel
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.dp2Px
@@ -30,7 +30,7 @@ class EditIntroduceFragment :
 
     private val editIntroduceViewModel by viewModels<EditIntroduceViewModel>()
 
-    private val loginViewModel by activityViewModels<LoginViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -94,7 +94,7 @@ class EditIntroduceFragment :
                 }
             }
         }
-        collectInLifecycle(loginViewModel.editProfileEventStateFlow) {
+        collectInLifecycle(myViewModel.editProfileEventStateFlow) {
             when (it) {
                 is ModelState.Loading -> {
                     //TODO 로딩
@@ -128,7 +128,7 @@ class EditIntroduceFragment :
             EditIntroducePage.INTRODUCTION -> {
                 val introduction = binding.etEditDescription.text.toString()
                 val mbti = createMbtiOrNull(editIntroduceViewModel.selectedMbtiType)
-                loginViewModel.requestEditIntroductionMbti(introduction = introduction, mbti = mbti)
+                myViewModel.requestEditIntroductionMbti(introduction = introduction, mbti = mbti)
             }
         }
     }

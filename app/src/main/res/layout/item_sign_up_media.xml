@@ -20,39 +20,40 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/ic_add_media_ref" />
-
-        <View
-            android:id="@+id/vRefContainer"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@drawable/bg_rect_stroke_w2_main_color_r10"
-            app:layout_constraintBottom_toBottomOf="@id/ivMedia"
-            app:layout_constraintEnd_toEndOf="@id/ivMedia"
-            app:layout_constraintStart_toStartOf="@id/ivMedia"
-            app:layout_constraintTop_toTopOf="@id/ivMedia" />
+            tools:src="@drawable/bg_add_media_empty" />
 
         <ImageView
             android:id="@+id/ivVideoIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:layout_marginEnd="13dp"
             android:alpha="0.5"
             android:src="@drawable/ic_video"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/white" />
 
-        <!-- TODO 위치 디자인 문의 중 -->
         <ImageView
             android:id="@+id/ivBtnDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_delete"
+            android:layout_marginTop="21dp"
+            android:layout_marginEnd="21dp"
+            android:src="@drawable/ic_close"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/white" />
+
+        <ImageView
+            android:id="@+id/ivBtnSetMainMedia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="21dp"
+            android:layout_marginTop="21dp"
+            android:src="@drawable/ic_representative"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
 

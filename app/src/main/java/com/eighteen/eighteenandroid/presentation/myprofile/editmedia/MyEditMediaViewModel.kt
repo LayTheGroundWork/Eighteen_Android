@@ -20,22 +20,7 @@ class MyEditMediaViewModel(initModel: MyEditMediaModel) : ViewModel() {
 
     fun addMedia(model: MyEditMediaModel.Media) {
         _mediasStateFlow.update {
-            val updatedMedias = it.medias.toMutableList().apply {
-                add(model)
-            }
-            it.copy(medias = updatedMedias)
-        }
-    }
-
-    fun addRepMedia(model: MyEditMediaModel.Media) {
-        _mediasStateFlow.update {
-            it.copy(repMedia = model)
-        }
-    }
-
-    fun removeRepMedia() {
-        _mediasStateFlow.update {
-            it.copy(repMedia = null)
+            it.copy(medias = it.medias + model)
         }
     }
 
@@ -44,7 +29,13 @@ class MyEditMediaViewModel(initModel: MyEditMediaModel) : ViewModel() {
             val updatedMedias = it.medias.toMutableList().apply {
                 removeIf { mediaModel -> model == mediaModel }
             }
-            it.copy(medias = updatedMedias)
+            it.copy(mainMedia = it.mainMedia?.takeIf { it != model }, medias = updatedMedias)
+        }
+    }
+
+    fun setMainMedia(position: Int) {
+        _mediasStateFlow.update {
+            it.copy(mainMedia = it.medias.getOrNull(position))
         }
     }
 

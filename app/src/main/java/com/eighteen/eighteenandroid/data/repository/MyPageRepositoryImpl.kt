@@ -52,9 +52,7 @@ class MyPageRepositoryImpl @Inject constructor(private val myPageService: MyPage
         }
     }
 
-    //TODO 서버 응답 값 적용(accessToken 확인 필요)
-    override suspend fun getMyPageProfile(accessToken: String): Result<Profile?> = runCatching {
-        //TODO accessToken 적용
+    override suspend fun getMyPageProfile(): Result<Profile?> = runCatching {
         myPageService.getMyPage().mapper {
             it.data?.toProfile()
         }

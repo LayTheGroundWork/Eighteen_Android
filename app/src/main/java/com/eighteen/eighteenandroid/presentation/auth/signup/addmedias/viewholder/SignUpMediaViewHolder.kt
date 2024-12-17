@@ -19,36 +19,32 @@ class SignUpMediaViewHolder(
     }
 
     private fun bindImage(model: SignUpMediaItemModel) {
-        binding.vRefContainer.isVisible = model.isRef
-        when (model) {
-            is SignUpMediaItemModel.Empty -> {
-                val drawableRes = if (model.isRef) R.drawable.ic_add_media_ref else
-                    R.drawable.bg_add_media_empty
-                binding.ivMedia.setImageResource(drawableRes)
+        with(binding) {
+            when (model) {
+                is SignUpMediaItemModel.Empty -> ivMedia.setImageResource(R.drawable.bg_add_media_empty)
+                is SignUpMediaItemModel.Image -> ImageLoader.get()
+                    .loadBitmapCenterCrop(ivMedia, model.imageBitmap)
+                is SignUpMediaItemModel.Video -> ImageLoader.get()
+                    .loadUrlCenterCrop(ivMedia, url = model.uriString)
             }
-            is SignUpMediaItemModel.Image -> ImageLoader.get()
-                .loadBitmapCenterCrop(binding.ivMedia, model.imageBitmap)
-            is SignUpMediaItemModel.Video -> ImageLoader.get()
-                .loadUrlCenterCrop(binding.ivMedia, url = model.uriString)
+
+            ivBtnDelete.isVisible = model !is SignUpMediaItemModel.Empty
+            ivVideoIcon.isVisible = model is SignUpMediaItemModel.Video
+            ivBtnSetMainMedia.isVisible = model !is SignUpMediaItemModel.Empty
+            ivBtnSetMainMedia.alpha = if (model.isMain) 1f else 0.2f
         }
-        binding.ivBtnDelete.isVisible = model !is SignUpMediaItemModel.Empty
-        binding.ivVideoIcon.isVisible = model is SignUpMediaItemModel.Video
+
     }
 
     private fun bindClickListener(model: SignUpMediaItemModel, position: Int) {
         binding.ivMedia.setOnClickListener {
-            if (model is SignUpMediaItemModel.Empty) {
-                if (model.isRef) clickListener.onClickAddRefMedia()
-                else clickListener.onClickAddMedia()
-            } else {
-                //do nothing
-            }
+            if (model is SignUpMediaItemModel.Empty) clickListener.onClickAddMedia()
         }
         binding.ivBtnDelete.setOnClickListener {
-            //대표이미지를 제외하고 위치(index)를 넣어주어야 함
-            if (model.isRef) clickListener.onClickRemoveRef()
-            else clickListener.onClickRemove(position = position - 1)
-
+            clickListener.onClickRemove(position = position)
+        }
+        binding.ivBtnSetMainMedia.setOnClickListener {
+            clickListener.onClickSetMainMedia(position = position)
         }
     }
 }

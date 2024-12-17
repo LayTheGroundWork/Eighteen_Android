@@ -9,6 +9,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -16,10 +17,12 @@ import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentSignUpBinding
 import com.eighteen.eighteenandroid.presentation.BaseFragment
 import com.eighteen.eighteenandroid.presentation.FullWebViewFragment
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpEditMediaAction
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
+import com.eighteen.eighteenandroid.presentation.common.getParcelableOrNull
 import com.eighteen.eighteenandroid.presentation.common.hideKeyboardAndRemoveCurrentFocus
 import com.eighteen.eighteenandroid.presentation.common.livedata.EventObserver
 import com.eighteen.eighteenandroid.presentation.common.requestPermissions
@@ -36,8 +39,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class SignUpFragment : BaseFragment<FragmentSignUpBinding>(FragmentSignUpBinding::inflate),
     SignUpContentContainer {
     private val signUpViewModel by viewModels<SignUpViewModel>()
-
     private val editMediaViewModel by viewModelsByBackStackEntry<EditMediaViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -48,8 +51,13 @@ class SignUpFragment : BaseFragment<FragmentSignUpBinding>(FragmentSignUpBinding
             if (backStackEntryCount <= 0) findNavController().popBackStack()
             else signUpViewModel.actionToPrevPage()
         }
-
     }
+
+    val loginType
+        get() = arguments?.getParcelableOrNull(
+            ARGUMENT_LOGIN_TYPE_KEY,
+            LoginType::class.java
+        )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -80,6 +88,7 @@ class SignUpFragment : BaseFragment<FragmentSignUpBinding>(FragmentSignUpBinding
         initEditMediaObserver()
         initActionEventObserver()
         initSignUpResultStateFlow()
+        initLoginCompleteLiveEvent()
     }
 
     private fun initSignUpObserver() = with(signUpViewModel) {
@@ -157,12 +166,7 @@ class SignUpFragment : BaseFragment<FragmentSignUpBinding>(FragmentSignUpBinding
 
     private fun initEditMediaObserver() = with(editMediaViewModel) {
         editResultEventLiveData.observe(viewLifecycleOwner, EventObserver {
-            val isRef = signUpViewModel.editMediaActionEventLiveData.value?.peekContent()?.isRef
-                ?: false
-            signUpViewModel.addMediaResult(
-                mediaResult = it,
-                isRef = isRef
-            )
+            signUpViewModel.addMediaResult(mediaResult = it)
         })
     }
 
@@ -178,5 +182,31 @@ class SignUpFragment : BaseFragment<FragmentSignUpBinding>(FragmentSignUpBinding
                 }
             }
         }
+    }
+
+    private fun initLoginCompleteLiveEvent() {
+        signUpViewModel.requestLoginEventLiveData.observe(viewLifecycleOwner, EventObserver {
+            myViewModel.completeLogin(authToken = it)
+        })
+        collectInLifecycle(myViewModel.myProfileStateFlow){
+            when(it){
+                is ModelState.Loading->{
+
+                }
+                is ModelState.Success->{
+                    findNavController().popBackStack(R.id.fragmentLogin, true)
+                }
+                is ModelState.Error->{
+
+                }
+                else ->{
+                    //do nothing
+                }
+            }
+        }
+    }
+
+    companion object {
+        const val ARGUMENT_LOGIN_TYPE_KEY = "argument_login_type_key"
     }
 }

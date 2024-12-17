@@ -11,7 +11,7 @@ import com.eighteen.eighteenandroid.databinding.ItemEditTenOfQnaInputBinding
 import com.eighteen.eighteenandroid.domain.model.Qna
 import com.eighteen.eighteenandroid.domain.model.QnaType
 import com.eighteen.eighteenandroid.presentation.BaseFragment
-import com.eighteen.eighteenandroid.presentation.LoginViewModel
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
@@ -24,12 +24,12 @@ import dagger.hilt.android.AndroidEntryPoint
 class EditTenOfQnaFragment :
     BaseFragment<FragmentEditTenOfQnaBinding>(FragmentEditTenOfQnaBinding::inflate) {
 
-    private val loginViewModel by activityViewModels<LoginViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
 
     private val editTenOfQnaViewModel by viewModelsByBackStackEntry<EditTenOfQnaViewModel>(
         factoryProducer = {
             EditTenOfQnaViewModel.Factory(
-                initQnas = loginViewModel.myProfileStateFlow.value.data?.qna ?: emptyList()
+                initQnas = myViewModel.myProfileStateFlow.value.data?.qna ?: emptyList()
             )
         })
 
@@ -42,7 +42,7 @@ class EditTenOfQnaFragment :
                 openSelectQnaDialog()
             }
             tvBtnSave.setOnClickListener {
-                loginViewModel.requestEditQuestions(questions = editTenOfQnaViewModel.editTenOfQnaModelsStateFlow.value)
+                myViewModel.requestEditQuestions(questions = editTenOfQnaViewModel.editTenOfQnaModelsStateFlow.value)
             }
         }
         initStateFlow()
@@ -82,7 +82,7 @@ class EditTenOfQnaFragment :
                 tvBtnSave.isEnabled = it.size >= MINIMUM_QNA_SIZE
             }
         }
-        collectInLifecycle(loginViewModel.editProfileEventStateFlow) {
+        collectInLifecycle(myViewModel.editProfileEventStateFlow) {
             when (it) {
                 is ModelState.Loading -> {
                     //TODO 로딩

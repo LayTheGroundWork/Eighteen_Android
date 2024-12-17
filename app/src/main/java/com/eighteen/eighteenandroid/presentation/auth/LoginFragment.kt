@@ -6,21 +6,30 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.TextAppearanceSpan
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.text.toSpannable
 import androidx.navigation.fragment.findNavController
 import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentLoginBinding
 import com.eighteen.eighteenandroid.presentation.BaseFragment
+import com.eighteen.eighteenandroid.presentation.auth.signup.LoginType
+import com.eighteen.eighteenandroid.presentation.auth.signup.SignUpFragment.Companion.ARGUMENT_LOGIN_TYPE_KEY
 
 class LoginFragment : BaseFragment<FragmentLoginBinding>(FragmentLoginBinding::inflate) {
     override fun initView() {
         bind {
             tvNoticeAgreed.text = createNoticeAgreedSpannable()
             tvBtnSignUpWithPhoneNumber.setOnClickListener {
-                findNavController().navigate(R.id.action_fragmentLogin_to_fragmentSignUp)
+                findNavController().navigate(
+                    R.id.action_fragmentLogin_to_fragmentSignUp,
+                    bundleOf(ARGUMENT_LOGIN_TYPE_KEY to LoginType.SIGNUP)
+                )
             }
             tvBtnLogin.setOnClickListener {
-                //TODO 로그인 플로우 이동
+                findNavController().navigate(
+                    R.id.action_fragmentLogin_to_fragmentSignUp,
+                    bundleOf(ARGUMENT_LOGIN_TYPE_KEY to LoginType.LOGIN)
+                )
             }
             ivBtnClose.setOnClickListener {
                 findNavController().popBackStack()

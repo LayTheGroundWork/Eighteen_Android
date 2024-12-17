@@ -6,18 +6,24 @@ import java.util.Locale
 androidComponents {
     onVariants(selector().all()) { variant ->
         afterEvaluate {
-            project.tasks.getByName("ksp${variant.name.replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(
-                    Locale.getDefault()
-                ) else it.toString()
-            }}Kotlin") {
+            project.tasks.getByName(
+                "ksp${
+                    variant.name.replaceFirstChar {
+                        if (it.isLowerCase()) it.titlecase(
+                            Locale.getDefault()
+                        ) else it.toString()
+                    }
+                }Kotlin"
+            ) {
                 val dataBindingTask =
                     try {
-                        val taskName = "dataBindingGenBaseClasses${variant.name.replaceFirstChar {
-                            if (it.isLowerCase()) it.titlecase(
-                                Locale.getDefault()
-                            ) else it.toString()
-                        }}"
+                        val taskName = "dataBindingGenBaseClasses${
+                            variant.name.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(
+                                    Locale.getDefault()
+                                ) else it.toString()
+                            }
+                        }"
                         project.tasks.getByName(taskName) as DataBindingGenBaseClassesTask
                     } catch (e: UnknownTaskException) {
                         return@getByName
@@ -164,4 +170,8 @@ dependencies {
 
     // Splash Screen
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    //DataStore
+    val datastoreVersion = "1.1.1"
+    implementation("androidx.datastore:datastore-preferences:$datastoreVersion")
 }

@@ -17,5 +17,5 @@ interface MyPageRepository {
         questions: List<Qna>
     ): Result<String?>
 
-    suspend fun getMyPageProfile(accessToken: String): Result<Profile?>
+    suspend fun getMyPageProfile(): Result<Profile?>
 }

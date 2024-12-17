@@ -7,7 +7,7 @@
         android:title="@string/menu_main" />
 
     <item
-        android:id="@+id/btn_bottom_ranking"
+        android:id="@+id/fragmentRanking"
         android:enabled="true"
         android:icon="@drawable/menu_ranking_selected"
         android:title="@string/menu_ranking" />

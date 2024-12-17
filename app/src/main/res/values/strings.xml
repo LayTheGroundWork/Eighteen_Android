@@ -35,6 +35,8 @@
     <string name="nickname_error_wrong_input">한글/영어/숫자만 입력하실 수 있습니다.</string>
     <string name="nickname_error_length">2~8자리만 입력하실 수 있습니다.</string>
     <string name="representative_image">대표 사진</string>
+    <string name="required_login_title">로그인이 필요한 서비스입니다.</string>
+    <string name="required_login_content">로그인 하시겠습니까?</string>
 
     <!-- 로그인/회원가입 -->
     <string name="sign_up_login_title">가입하기</string>
@@ -85,7 +87,7 @@
     <string name="sign_up_select_tag_hint">하나의 카테고리를 선택할 수 있어요!</string>
 
     <string name="sign_up_add_media_title">%s 카테고리에서 자랑할\n사진이나 동영상을 추가해보세요</string>
-    <string name="sign_up_add_media_hint">*최대 10개를 등록할 수 있어요</string>
+    <string name="sign_up_add_media_hint">*최대 2개를 등록할 수 있어요</string>
     <string name="sign_up_add_media_guide">사진 가이드를 참고해주세요</string>
 
     <string name="sign_up_completed_title">등록이 완료되었어요!\n이제 A-TEEN을 시작해보세요 :)</string>
@@ -190,6 +192,14 @@
     <string name="text_teen_my_choice">내가 투표했던\nTEEN</string>
     <string name="text_teen_recent_join">최근 가입한\nTEEN</string>
     <string name="text_teen_same_school">같은 학교인\nTEEN</string>
+
+    <!-- Ranking-->
+    <string name="ranking_banner_title">Ranking</string>
+    <string name="ranking_banner_description">투표해보세요</string>
+    <string name="ranking_voting_dialog_title">뷰티 투표에 참여하시겠어요?</string>
+    <string name="ranking_voting_dialog_description">투표 설명에 대한 간단한 text</string>
+    <string name="ranking_voting_dialog_non_participation">다음에 할게요</string>
+    <string name="ranking_voting_dialog_participation">네, 참여할래요!</string>
 
     <!-- Badge Detail -->
     <string name="badge_detail_title">내 배지</string>

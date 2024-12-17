@@ -11,7 +11,7 @@ import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentEditSchoolBinding
 import com.eighteen.eighteenandroid.domain.model.School
 import com.eighteen.eighteenandroid.presentation.BaseFragment
-import com.eighteen.eighteenandroid.presentation.LoginViewModel
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.dp2Px
@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class EditSchoolFragment :
     BaseFragment<FragmentEditSchoolBinding>(FragmentEditSchoolBinding::inflate) {
-    private val loginViewModel by activityViewModels<LoginViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
 
     private val editSchoolViewModel by viewModels<EditSchoolViewModel>()
 
@@ -38,7 +38,7 @@ class EditSchoolFragment :
                 findNavController().popBackStack()
             }
             tvBtnComplete.setOnClickListener {
-                loginViewModel.requestEditSchool(school = editSchoolViewModel.selectedSchool)
+                myViewModel.requestEditSchool(school = editSchoolViewModel.selectedSchool)
             }
         }
         initStateFlow()
@@ -104,7 +104,7 @@ class EditSchoolFragment :
                 }
             }
         }
-        collectInLifecycle(loginViewModel.editProfileEventStateFlow) {
+        collectInLifecycle(myViewModel.editProfileEventStateFlow) {
             when (it) {
                 is ModelState.Loading -> {
                     //TODO 로딩

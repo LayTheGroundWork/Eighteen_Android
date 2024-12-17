@@ -25,7 +25,7 @@ class SignUpMediasAdapter(private val clickListener: SignUpAddMediasClickListene
             override fun areItemsTheSame(
                 oldItem: SignUpMediaItemModel,
                 newItem: SignUpMediaItemModel
-            ): Boolean = true
+            ): Boolean = oldItem.areItemsTheSame(newItem)
 
             override fun areContentsTheSame(
                 oldItem: SignUpMediaItemModel,

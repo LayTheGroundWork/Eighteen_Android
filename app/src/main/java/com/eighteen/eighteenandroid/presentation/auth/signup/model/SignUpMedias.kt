@@ -1,6 +1,9 @@
 package com.eighteen.eighteenandroid.presentation.auth.signup.model
 
 data class SignUpMedias(
-    val ref: SignUpMedia? = null,
+    val mainMedia: SignUpMedia? = null,
     val medias: List<SignUpMedia> = emptyList()
-)
+) {
+    val mainMediaOrFirst
+        get() = mainMedia ?: medias.firstOrNull()
+}

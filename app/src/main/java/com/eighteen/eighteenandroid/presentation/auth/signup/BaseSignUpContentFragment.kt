@@ -20,7 +20,6 @@ import com.eighteen.eighteenandroid.presentation.common.livedata.EventObserver
  * @property progress : progress bar 진행도 (0~100), null일 경우 gone
  * @property signUpNextButtonModel : 하단 다음버튼 디자인 모델
  */
-//TODO back pressed handle 구현
 abstract class BaseSignUpContentFragment<VB : ViewBinding>(bindingFactory: (LayoutInflater) -> VB) :
     BaseFragment<VB>(bindingFactory) {
 
@@ -37,6 +36,7 @@ abstract class BaseSignUpContentFragment<VB : ViewBinding>(bindingFactory: (Layo
     protected abstract val onMoveNextPageAction: () -> Unit
     protected abstract val progress: Int?
     protected abstract val signUpNextButtonModel: SignUpNextButtonModel
+    val loginType get() = ((parentFragment?.parentFragment) as? SignUpFragment)?.loginType
 
     @CallSuper
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

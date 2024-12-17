@@ -1,11 +1,19 @@
 package com.eighteen.eighteenandroid.data.repository
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import com.eighteen.eighteenandroid.common.safeLet
+import com.eighteen.eighteenandroid.data.ACCESS_TOKEN_PREFERENCE_KEY
+import com.eighteen.eighteenandroid.data.HEADER_AUTHORIZATION
+import com.eighteen.eighteenandroid.data.HEADER_REFRESH
+import com.eighteen.eighteenandroid.data.REFRESH_TOKEN_PREFERENCE_KEY
 import com.eighteen.eighteenandroid.data.datasource.remote.request.SchoolRequest
 import com.eighteen.eighteenandroid.data.datasource.remote.request.SignUpRequest
 import com.eighteen.eighteenandroid.data.datasource.remote.service.UserService
 import com.eighteen.eighteenandroid.data.mapper.ApiException
 import com.eighteen.eighteenandroid.data.mapper.mapper
-import com.eighteen.eighteenandroid.domain.model.LoginResultInfo
+import com.eighteen.eighteenandroid.domain.model.AuthToken
 import com.eighteen.eighteenandroid.domain.model.Mbti
 import com.eighteen.eighteenandroid.domain.model.Media
 import com.eighteen.eighteenandroid.domain.model.Profile
@@ -16,10 +24,14 @@ import com.eighteen.eighteenandroid.domain.model.SignUpInfo
 import com.eighteen.eighteenandroid.domain.model.SnsLink
 import com.eighteen.eighteenandroid.domain.model.User
 import com.eighteen.eighteenandroid.domain.repository.UserRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class UserRepositoryImpl @Inject constructor(private val userService: UserService) :
-    UserRepository {
+class UserRepositoryImpl @Inject constructor(
+    private val userService: UserService,
+    private val preferenceDatastore: DataStore<Preferences>
+) : UserRepository {
     override suspend fun fetchUserData(): Result<List<User>> =
         runCatching {
 //            userService.getUserInfo().mapper {
@@ -112,7 +124,7 @@ class UserRepositoryImpl @Inject constructor(private val userService: UserServic
         )
     }
 
-    override suspend fun postSignUp(signUpInfo: SignUpInfo): Result<LoginResultInfo> = runCatching {
+    override suspend fun postSignUp(signUpInfo: SignUpInfo): Result<AuthToken> = runCatching {
         val signUpRequest = signUpInfo.run {
             SignUpRequest(
                 phoneNumber = phoneNumber,
@@ -127,7 +139,7 @@ class UserRepositoryImpl @Inject constructor(private val userService: UserServic
         }
         //TODO 응답 값 수정(문의 중)
         userService.postSignUp(signUpRequest = signUpRequest).mapper {
-            LoginResultInfo("", "", uniqueId = it.data?.uniqueId ?: "")
+            AuthToken("", "")
         }
     }
 
@@ -136,6 +148,31 @@ class UserRepositoryImpl @Inject constructor(private val userService: UserServic
     ): Result<Boolean> = runCatching {
         userService.postDuplicationCheck(uniqueId = uniqueId).mapper {
             it.data ?: throw ApiException.Unknown
+        }
+    }
+
+    override fun getTokenFlow(): Flow<AuthToken?> =
+        preferenceDatastore.data.map {
+            val accessToken = it[ACCESS_TOKEN_PREFERENCE_KEY]
+            val refreshToken = it[REFRESH_TOKEN_PREFERENCE_KEY]
+            safeLet(accessToken, refreshToken) { access, refresh ->
+                AuthToken(accessToken = access, refreshToken = refresh)
+            }
+        }
+
+    override suspend fun saveToken(authToken: AuthToken) {
+        preferenceDatastore.edit {
+            it[ACCESS_TOKEN_PREFERENCE_KEY] = authToken.accessToken
+            it[REFRESH_TOKEN_PREFERENCE_KEY] = authToken.refreshToken
+        }
+    }
+
+    override suspend fun login(phoneNumber: String): Result<AuthToken> = runCatching {
+        val result = userService.postLogin(phoneNumber = phoneNumber)
+        result.headers().run {
+            safeLet(get(HEADER_AUTHORIZATION), get(HEADER_REFRESH)) { accessToken, refreshToken ->
+                AuthToken(accessToken = accessToken, refreshToken = refreshToken)
+            } ?: throw Exception("token must not be null")
         }
     }
 }

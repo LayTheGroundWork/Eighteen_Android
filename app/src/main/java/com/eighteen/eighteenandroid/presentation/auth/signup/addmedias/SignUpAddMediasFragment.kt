@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import com.eighteen.eighteenandroid.R
+import com.eighteen.eighteenandroid.common.MEDIA_COUNT
 import com.eighteen.eighteenandroid.common.safeLet
 import com.eighteen.eighteenandroid.databinding.FragmentSignUpAddMediasBinding
 import com.eighteen.eighteenandroid.presentation.auth.signup.BaseSignUpContentFragment
@@ -41,18 +42,12 @@ class SignUpAddMediasFragment :
         buttonText = SignUpNextButtonModel.ButtonText.PASS
     )
 
-    private val mediaPickerCallback = { uri: Uri?, isRef: Boolean ->
+    private val mediaPickerCallback = { uri: Uri? ->
         safeLet(uri, context) { nonNullUri, context ->
             getMimeTypeFromUri(nonNullUri, context)?.let { typeString ->
                 val uriString = nonNullUri.toString()
-                if (typeString.startsWith("image")) SignUpEditMediaAction.EditImage(
-                    uriString,
-                    isRef
-                )
-                else if (typeString.startsWith("video")) SignUpEditMediaAction.EditVideo(
-                    uriString,
-                    isRef
-                )
+                if (typeString.startsWith("image")) SignUpEditMediaAction.EditImage(uriString)
+                else if (typeString.startsWith("video")) SignUpEditMediaAction.EditVideo(uriString)
                 else null
             }?.also { action ->
                 signUpViewModelContentInterface.setEditMediaAction(action)
@@ -64,19 +59,15 @@ class SignUpAddMediasFragment :
 
     private val clickListener = object : SignUpAddMediasClickListener {
         override fun onClickAddMedia() {
-            mediaPickerWrapper.openMediaPicker { mediaPickerCallback(it, false) }
-        }
-
-        override fun onClickAddRefMedia() {
-            mediaPickerWrapper.openMediaPicker { mediaPickerCallback(it, true) }
+            mediaPickerWrapper.openMediaPicker { mediaPickerCallback(it) }
         }
 
         override fun onClickRemove(position: Int) {
             signUpViewModelContentInterface.removeMedia(position = position)
         }
 
-        override fun onClickRemoveRef() {
-            signUpViewModelContentInterface.removeRefMedia()
+        override fun onClickSetMainMedia(position: Int) {
+            signUpViewModelContentInterface.setMainMedia(position = position)
         }
     }
 
@@ -150,41 +141,29 @@ class SignUpAddMediasFragment :
     }
 
     private fun createSignUpMediaItemModels(signUpMedias: SignUpMedias): List<SignUpMediaItemModel> {
-        fun createSignUpMediaItem(signUpMedia: SignUpMedia, isRef: Boolean = false) =
+        fun createSignUpMediaItem(signUpMedia: SignUpMedia, isMain: Boolean = false) =
             when (signUpMedia) {
                 is SignUpMedia.Image -> SignUpMediaItemModel.Image(
                     imageBitmap = signUpMedia.imageBitmap,
-                    isRef = isRef
+                    isMain = isMain
                 )
                 is SignUpMedia.Video -> SignUpMediaItemModel.Video(
                     uriString = signUpMedia.uriString,
-                    isRef = isRef
+                    isMain = isMain
                 )
             }
 
         val items = mutableListOf<SignUpMediaItemModel>()
-        val refItem = if (signUpMedias.ref != null) createSignUpMediaItem(
-            signUpMedia = signUpMedias.ref,
-            isRef = true
-        )
-        else SignUpMediaItemModel.Empty(isRef = true)
-
-        val mediaItems =
-            signUpMedias.medias.map { createSignUpMediaItem(signUpMedia = it, isRef = false) }
-
-        items.add(refItem)
-        items.addAll(mediaItems)
-        if (items.size < MINIMUM_DISPLAY_ITEM_COUNT) items.addAll(List(MINIMUM_DISPLAY_ITEM_COUNT - items.size) {
-            SignUpMediaItemModel.Empty(
-                isRef = false
+        val mediaItems = signUpMedias.medias.map {
+            createSignUpMediaItem(
+                signUpMedia = it,
+                isMain = signUpMedias.mainMediaOrFirst == it
             )
-        })
-        else if (items.size < MAXIMUM_DISPLAY_ITEM_COUNT) items.add(SignUpMediaItemModel.Empty(isRef = false))
+        }
+        items.addAll(mediaItems)
+        repeat(MEDIA_COUNT - items.size) {
+            items.add(SignUpMediaItemModel.Empty)
+        }
         return items
-    }
-
-    companion object {
-        private const val MINIMUM_DISPLAY_ITEM_COUNT = 3
-        private const val MAXIMUM_DISPLAY_ITEM_COUNT = 10
     }
 }

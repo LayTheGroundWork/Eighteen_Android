@@ -13,11 +13,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.eighteen.eighteenandroid.R
+import com.eighteen.eighteenandroid.common.MEDIA_COUNT
 import com.eighteen.eighteenandroid.databinding.FragmentMyEditMediaBinding
 import com.eighteen.eighteenandroid.databinding.ItemEditMediaBinding
 import com.eighteen.eighteenandroid.domain.model.Media
 import com.eighteen.eighteenandroid.presentation.BaseFragment
-import com.eighteen.eighteenandroid.presentation.LoginViewModel
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.dp2Px
 import com.eighteen.eighteenandroid.presentation.common.getMimeTypeFromUri
@@ -34,17 +35,17 @@ import com.eighteen.eighteenandroid.presentation.myprofile.editmedia.model.MyEdi
 
 class MyEditMediaFragment :
     BaseFragment<FragmentMyEditMediaBinding>(FragmentMyEditMediaBinding::inflate) {
-    private val loginViewModel by activityViewModels<LoginViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
     private val myEditMediaViewModel by viewModels<MyEditMediaViewModel>(factoryProducer = {
         //TODO profile 모델 대표이미지 구분 문의 후 적용(현재 임시로 변환)
-        val medias = loginViewModel.myProfileStateFlow.value.data?.medias ?: emptyList()
+        val medias = myViewModel.myProfileStateFlow.value.data?.medias ?: emptyList()
         val mediaModels = medias.map {
             when (it) {
                 is Media.Image -> MyEditMediaModel.Media.Image(imageUrl = it.url)
                 is Media.Video -> MyEditMediaModel.Media.Video(url = it.url)
             }
         }
-        val myEditMediaModel = MyEditMediaModel(repMedia = null, medias = mediaModels)
+        val myEditMediaModel = MyEditMediaModel(mainMedia = null, medias = mediaModels)
         MyEditMediaViewModel.Factory(myEditMediaModel)
     })
 
@@ -69,15 +70,18 @@ class MyEditMediaFragment :
         collectInLifecycle(myEditMediaViewModel.mediasStateFlow) {
             binding.glContainer.run {
                 removeAllViews()
-                val repView = it.repMedia?.let {
-                    createMediaView(model = it, isRep = true)
-                } ?: createEmptyView(isRep = true)
-                addView(repView)
-                it.medias.forEach {
-                    val mediaView = createMediaView(model = it, isRep = false)
+                it.medias.forEachIndexed { idx, media ->
+                    val mediaView =
+                        createMediaView(
+                            model = media,
+                            isMain = it.mainMediaOrFirst == media,
+                            position = idx
+                        )
                     addView(mediaView)
                 }
-                if (it.medias.size + 1 < MAXIMUM_MEDIAS_COUNT) addView(createEmptyView(isRep = false))
+                repeat(MEDIA_COUNT - it.medias.size) {
+                    addView(createEmptyView())
+                }
                 val betweenMargin = context.dp2Px(16)
                 children.forEachIndexed { index, view ->
                     view.updateLayoutParams<MarginLayoutParams> {
@@ -90,9 +94,12 @@ class MyEditMediaFragment :
         }
     }
 
-    private fun createMediaView(model: MyEditMediaModel.Media, isRep: Boolean) =
+    private fun createMediaView(model: MyEditMediaModel.Media, isMain: Boolean, position: Int) =
         ItemEditMediaBinding.inflate(layoutInflater).apply {
-            vRepContainer.isVisible = isRep
+            ivBtnDelete.isVisible = true
+            ivVideoIcon.isVisible = model is MyEditMediaModel.Media.Video
+            ivBtnSetMainMedia.isVisible = true
+            ivBtnSetMainMedia.alpha = if (isMain) 1f else 0.2f
             when (model) {
                 is MyEditMediaModel.Media.Image -> run {
                     if (model.imageUrl != null) {
@@ -106,12 +113,12 @@ class MyEditMediaFragment :
                 is MyEditMediaModel.Media.Video -> ImageLoader.get()
                     .loadUrlCenterCrop(ivMedia, url = model.url)
             }
-            clRepEmpty.isVisible = false
             ivVideoIcon.isVisible = model is MyEditMediaModel.Media.Video
-            clEmpty.isVisible = false
             ivBtnDelete.setOnClickListener {
-                if (isRep) myEditMediaViewModel.removeRepMedia()
-                else myEditMediaViewModel.removeMedia(model)
+                myEditMediaViewModel.removeMedia(model)
+            }
+            ivBtnSetMainMedia.setOnClickListener {
+                myEditMediaViewModel.setMainMedia(position = position)
             }
         }.root.apply {
             layoutParams = GridLayout.LayoutParams(
@@ -123,13 +130,11 @@ class MyEditMediaFragment :
             }
         }
 
-    private fun createEmptyView(isRep: Boolean) =
+    private fun createEmptyView() =
         ItemEditMediaBinding.inflate(layoutInflater).apply {
-            vRepContainer.isVisible = isRep
             ivBtnDelete.isVisible = false
             ivVideoIcon.isVisible = false
-            clRepEmpty.isVisible = isRep
-            clEmpty.isVisible = !isRep
+            ivBtnSetMainMedia.isVisible = false
         }.root.apply {
             layoutParams = GridLayout.LayoutParams(
                 GridLayout.spec(GridLayout.UNDEFINED, 1f),
@@ -144,15 +149,10 @@ class MyEditMediaFragment :
                     getMimeTypeFromUri(uri, context)?.let { typeString ->
                         val uriString = uri.toString()
                         editMediaViewModel.setMediaUriString(uriString = uriString)
-                        val event = if (typeString.startsWith("image")) MyEditMediaEvent.Image(
-                            uri = uriString,
-                            isRep = isRep
-                        )
-                        else if (typeString.startsWith("video")) MyEditMediaEvent.Video(
-                            uri = uriString,
-                            isRep = isRep
-                        )
-                        else return@let
+                        val event =
+                            if (typeString.startsWith("image")) MyEditMediaEvent.Image(uri = uriString)
+                            else if (typeString.startsWith("video")) MyEditMediaEvent.Video(uri = uriString)
+                            else return@let
                         myEditMediaViewModel.setOpenEditMediaEvent(event = event)
                     }
                 }
@@ -194,18 +194,11 @@ class MyEditMediaFragment :
             }
         })
         editMediaViewModel.editResultEventLiveData.observe(viewLifecycleOwner, EventObserver {
-            val isRep = myEditMediaViewModel.openEditMediaEventLiveData.value?.peekContent()?.isRep
-                ?: return@EventObserver
             val model = when (it) {
                 is EditMediaResult.Image -> MyEditMediaModel.Media.Image(bitmap = it.imageBitmap)
                 is EditMediaResult.Video -> MyEditMediaModel.Media.Video(url = it.uriString)
             }
-            if (isRep) myEditMediaViewModel.addRepMedia(model)
-            else myEditMediaViewModel.addMedia(model)
+            myEditMediaViewModel.addMedia(model)
         })
-    }
-
-    companion object {
-        private const val MAXIMUM_MEDIAS_COUNT = 10
     }
 }

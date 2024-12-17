@@ -8,7 +8,7 @@ import androidx.navigation.fragment.findNavController
 import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentEditNicknameBinding
 import com.eighteen.eighteenandroid.presentation.BaseFragment
-import com.eighteen.eighteenandroid.presentation.LoginViewModel
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.model.nickname.NicknameStatus
@@ -17,7 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class EditNicknameFragment :
     BaseFragment<FragmentEditNicknameBinding>(FragmentEditNicknameBinding::inflate) {
-    private val loginViewModel by activityViewModels<LoginViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
 
     private val editNicknameViewModel by viewModels<EditNicknameViewModel>()
     override fun initView() {
@@ -27,7 +27,7 @@ class EditNicknameFragment :
                 editNicknameViewModel.setNickName(nickname = it?.toString() ?: "")
             }
             tvBtnNext.setOnClickListener {
-                loginViewModel.requestEditNickName(nickName = editNicknameViewModel.nicknameStatusStateFLow.value.inputString)
+                myViewModel.requestEditNickName(nickName = editNicknameViewModel.nicknameStatusStateFLow.value.inputString)
             }
             ivBtnBack.setOnClickListener {
                 findNavController().popBackStack()
@@ -57,7 +57,7 @@ class EditNicknameFragment :
                     it.inputString.isNotEmpty() && it.status !is NicknameStatus.Error
             }
         }
-        collectInLifecycle(loginViewModel.editProfileEventStateFlow) {
+        collectInLifecycle(myViewModel.editProfileEventStateFlow) {
             when (it) {
                 is ModelState.Loading -> {
                     //TODO 로딩

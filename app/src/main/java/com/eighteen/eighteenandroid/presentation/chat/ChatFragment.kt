@@ -11,7 +11,7 @@ import androidx.navigation.fragment.findNavController
 import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentChatBinding
 import com.eighteen.eighteenandroid.presentation.BaseFragment
-import com.eighteen.eighteenandroid.presentation.LoginViewModel
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.chat.chatroom.ChatRoomFragment.Companion.ARGUMENT_CHAT_ROOM_ID_KEY
 import com.eighteen.eighteenandroid.presentation.chat.chatroom.ChatRoomFragment.Companion.ARGUMENT_SENDER_ID_KEY
 import com.eighteen.eighteenandroid.presentation.common.ModelState
@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ChatFragment : BaseFragment<FragmentChatBinding>(FragmentChatBinding::inflate) {
-    private val loginViewModel by activityViewModels<LoginViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
 
     @Inject
     lateinit var chatAssistedFactory: ChatViewModel.ChatAssistedFactory

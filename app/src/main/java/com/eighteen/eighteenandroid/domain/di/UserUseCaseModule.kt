@@ -5,6 +5,7 @@ import com.eighteen.eighteenandroid.domain.repository.UserRepository
 import com.eighteen.eighteenandroid.domain.usecase.CheckIdDuplicationUseCase
 import com.eighteen.eighteenandroid.domain.usecase.GetMyProfileUseCase
 import com.eighteen.eighteenandroid.domain.usecase.GetUserDetailInfoUseCase
+import com.eighteen.eighteenandroid.domain.usecase.LoginUseCase
 import com.eighteen.eighteenandroid.domain.usecase.SignUpUseCase
 import com.eighteen.eighteenandroid.domain.usecase.UserUseCase
 import dagger.Module
@@ -39,4 +40,8 @@ object UserUseCaseModule {
     @Singleton
     fun provideMyProfileUseCase(repository: MyPageRepository) =
         GetMyProfileUseCase(repository = repository)
+
+    @Provides
+    @Singleton
+    fun provideLoginUseCase(repository: UserRepository) = LoginUseCase(repository = repository)
 }

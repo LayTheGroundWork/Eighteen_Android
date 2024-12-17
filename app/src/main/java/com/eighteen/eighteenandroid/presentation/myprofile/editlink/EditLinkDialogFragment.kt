@@ -12,7 +12,7 @@ import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentEditLinkDialogBinding
 import com.eighteen.eighteenandroid.domain.model.SnsInfo
 import com.eighteen.eighteenandroid.presentation.BaseDialogFragment
-import com.eighteen.eighteenandroid.presentation.LoginViewModel
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.myprofile.editlink.model.EditLinkModel
@@ -22,10 +22,10 @@ import dagger.hilt.android.AndroidEntryPoint
 class EditLinkDialogFragment :
     BaseDialogFragment<FragmentEditLinkDialogBinding>(FragmentEditLinkDialogBinding::inflate) {
 
-    private val loginViewModel by activityViewModels<LoginViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
 
     private val editLinkViewModel by viewModels<EditLinkViewModel>(factoryProducer = {
-        val snsLinksList = loginViewModel.myProfileStateFlow.value.data?.snsInfoList ?: emptyList()
+        val snsLinksList = myViewModel.myProfileStateFlow.value.data?.snsInfoList ?: emptyList()
         EditLinkViewModel.Factory(
             instagram = snsLinksList.find { it.type == SnsInfo.SnsType.INSTAGRAM }?.id.orEmpty(),
             x = snsLinksList.find { it.type == SnsInfo.SnsType.X }?.id.orEmpty(),
@@ -63,7 +63,7 @@ class EditLinkDialogFragment :
                 }
             }
             ivBtnCheck.setOnClickListener {
-                loginViewModel.requestEditSnsInfo(snsInfo = editLinkViewModel.editLinkModelStateFlow.value.toSnsInfoList())
+                myViewModel.requestEditSnsInfo(snsInfo = editLinkViewModel.editLinkModelStateFlow.value.toSnsInfoList())
             }
             ivBtnBack.setOnClickListener {
                 dismissNow()
@@ -99,7 +99,7 @@ class EditLinkDialogFragment :
             DrawableCompat.setTint(targetDrawable, colorTint)
             binding.ivBtnCheck.setImageDrawable(targetDrawable)
         }
-        collectInLifecycle(loginViewModel.editProfileEventStateFlow) {
+        collectInLifecycle(myViewModel.editProfileEventStateFlow) {
             when (it) {
                 is ModelState.Loading -> {
                     //TODO 로딩처리

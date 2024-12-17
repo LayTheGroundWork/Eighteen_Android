@@ -10,7 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentMyProfileBinding
 import com.eighteen.eighteenandroid.presentation.BaseFragment
-import com.eighteen.eighteenandroid.presentation.LoginViewModel
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
 import com.eighteen.eighteenandroid.presentation.myprofile.editlink.EditLinkDialogFragment
 import kotlinx.coroutines.launch
@@ -19,7 +19,7 @@ class MyProfileFragment :
     BaseFragment<FragmentMyProfileBinding>(FragmentMyProfileBinding::inflate),
     MyProfileClickListener {
 
-    private val loginViewModel by activityViewModels<LoginViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
     private val myProfileViewModel by viewModels<MyProfileViewModel>()
 
     override fun initView() {
@@ -34,7 +34,7 @@ class MyProfileFragment :
     private fun initStateFlow() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                loginViewModel.myProfileStateFlow.collect {
+                myViewModel.myProfileStateFlow.collect {
                     if (it.isSuccess()) {
                         it.data?.let { profile ->
                             myProfileViewModel.setProfile(profile)

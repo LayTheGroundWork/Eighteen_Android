@@ -14,6 +14,8 @@ import androidx.navigation.fragment.findNavController
 import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentSignUpEnterAuthCodeBinding
 import com.eighteen.eighteenandroid.presentation.auth.signup.BaseSignUpContentFragment
+import com.eighteen.eighteenandroid.presentation.auth.signup.LoginType
+import com.eighteen.eighteenandroid.presentation.auth.signup.enterauthcode.model.ConfirmResultModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpPage
 import com.eighteen.eighteenandroid.presentation.common.ModelState
@@ -194,12 +196,18 @@ class SignUpEnterAuthCodeFragment :
                     Log.d("SignUpEnterAuthCodeFragment", "confirm loading")
                 }
                 is ModelState.Success -> {
-                    //TODO 인증 완료 분기처리
-                    //case 1. 이미 있는 회원일 경우(로그인)
-                    //showLoginDialogFragment()
-
-                    //case 2. 처음 가입한 경우(회원가입)
-                    showSignUpDialogFragment()
+                    if (loginType == LoginType.SIGNUP) {
+                        val data = it.data
+                        if (data is ConfirmResultModel.LoginSuccess) showLoginDialogFragment()
+                        else showSignUpDialogFragment()
+                    } else if (loginType == LoginType.LOGIN) {
+                        val data = it.data
+                        if (data is ConfirmResultModel.LoginSuccess) {
+                            signUpViewModelContentInterface.requestLogin(authToken = data.authToken)
+                        } else {
+                            //TODO 로그인 실패
+                        }
+                    }
                 }
                 is ModelState.Error -> {
                     //TODO 에러처리
@@ -263,8 +271,9 @@ class SignUpEnterAuthCodeFragment :
             viewLifecycleOwner,
             object : TwoButtonPopUpDialogFragment.TowButtonPopUpDialogFragmentResultListener() {
                 override fun onConfirm() {
-                    //TODO 로그인 상태로 변경
-                    findNavController().popBackStack()
+                    (signUpEnterAuthCodeViewModel.confirmMessageResultStateFlow.value.data as? ConfirmResultModel.LoginSuccess)?.let {
+                        signUpViewModelContentInterface.requestLogin(it.authToken)
+                    }
                 }
             })
     }
