@@ -15,10 +15,11 @@ import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.common.enums.Tag
 import com.eighteen.eighteenandroid.databinding.FragmentMainBinding
 import com.eighteen.eighteenandroid.domain.model.AboutTeen
-import com.eighteen.eighteenandroid.domain.model.MainItem
 import com.eighteen.eighteenandroid.domain.model.Tournament
 import com.eighteen.eighteenandroid.domain.model.User
 import com.eighteen.eighteenandroid.presentation.BaseFragment
+import com.eighteen.eighteenandroid.presentation.common.ModelState
+import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.createChip
 import com.eighteen.eighteenandroid.presentation.common.findViewHolderOrNull
 import com.eighteen.eighteenandroid.presentation.common.setTagStyle
@@ -47,9 +48,8 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
     private var selectedChip: Chip? = null
     private lateinit var mainAdapter: MainAdapter
 
-    private var userList = listOf<User>()
-    private var aboutTeenList = listOf<AboutTeen>()
-    private var tournamentList = listOf<Tournament>()
+//    private var aboutTeenList = listOf<AboutTeen>()
+//    private var tournamentList = listOf<Tournament>()
 
     private lateinit var mainAdapterListener: MainAdapterListener
 
@@ -59,6 +59,8 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
     private var autoScrollJob: Job? = null
     private var isAutoScrolling = false
+
+    private var pageNumList = mutableListOf<Int>()
 
     override fun initView() {
         initChipGroup()
@@ -345,136 +347,37 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
     private fun initMain() {
         initMainAdapter()
-        initData()
-        initUserListObserver()
+        initMainItemObserver()
     }
 
-    private fun initUserListObserver() {
-//        viewModel.mainItems.observe(viewLifecycleOwner) {
-//            mainAdapter.updateView(it)
-//        }
-
-        viewModel.userData.observe(viewLifecycleOwner) {
-            userList = it
-            updateMain()
+    private fun initMainItemObserver() {
+        viewModel.totalPage.observe(viewLifecycleOwner) {
+            // 총 페이지가 1보다 많을 때
+            if( it > 1 ) {
+                for( i in 1 until it ) {
+                    pageNumList.add(i)
+                }
+            }
         }
-    }
 
-    private fun updateMain() {
-        mainAdapter.updateView(
-            listOf(
-                MainItem.HeaderView(resources.getString(R.string.main_today_teen)),
-                MainItem.UserListView(
-                    userList
-                ), // User List
-                MainItem.DividerView,
-                MainItem.HeaderView(getString(R.string.main_about_teen)),
-                MainItem.AboutTeenListView(
-//                    aboutTeenList
-                    listOf(
-                        AboutTeen("Teen", "친구들의 프로필을 투표해보세요!"),
-                        AboutTeen("토너먼트", "투표 결과를 한 눈에 볼 수 있어요!"),
-                        AboutTeen("채팅", "채팅을 통해 친구들과 소통해보세요!"),
-                        AboutTeen("나만의 Teen", "나만의 프로필을 등록해보세요!")
-                    )
-                ), // About Teen List
-                MainItem.DividerView,
-                MainItem.HeaderWithMoreView(getString(R.string.main_tournament_in_progress)),
-                MainItem.TournamentListView(
-//                    tournamentList
-                    listOf(
-                        Tournament.Exercise,
-                        Tournament.Study
-                    )
-                ), // Tournament List
-                MainItem.DividerView,
-                MainItem.HeaderView(getString(R.string.main_another_teen)),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://image.blip.kr/v1/file/021ec61ff1c9936943383b84236a0e69",
-                        userId = "1",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교"
-                    )
-                ),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://cdn.newsculture.press/news/photo/202308/529742_657577_5726.jpg",
-                        userId = "2",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교",
-                    )
-                ),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://mblogthumb-phinf.pstatic.net/MjAyMTEwMzFfMTY1/MDAxNjM1NjUzMTI2NjI3.xXYQteLLoWLKcR9YnXS0Hk_y-DInauMzF25g7FxlcScg.2Y-neBBMVoP2IhcwzX2Zy2HB2d8EnM_cY76FVLuk_1Yg.JPEG.ssun2415/IMG_4148.jpg?type=w800",
-                        userId = "3",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교"
-                    )
-                )
-            )
-        )
-    }
+        collectInLifecycle(viewModel.mainItemStateFlow) {
+            when(it) {
+                is ModelState.Loading -> {
 
-    private fun initData() {
-        mainAdapter.updateView(
-            listOf(
-                MainItem.UserListView(
-                    emptyList()
-                ), // User List
-                MainItem.DividerView,
-                MainItem.HeaderView(getString(R.string.main_about_teen)),
-                MainItem.AboutTeenListView(
-                    listOf(
-                        AboutTeen("Teen", "친구들의 프로필을 투표해보세요!"),
-                        AboutTeen("토너먼트", "투표 결과를 한 눈에 볼 수 있어요!"),
-                        AboutTeen("채팅", "채팅을 통해 친구들과 소통해보세요!"),
-                        AboutTeen("나만의 Teen", "나만의 프로필을 등록해보세요!")
-                    )
-                ), // About Teen List
-                MainItem.DividerView,
-                MainItem.HeaderWithMoreView(getString(R.string.main_tournament_in_progress)),
-                MainItem.TournamentListView(
-                    listOf(
-                        Tournament.Exercise,
-                        Tournament.Study
-                    )
-                ), // Tournament List
-                MainItem.DividerView,
-                MainItem.HeaderView(getString(R.string.main_another_teen)),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://image.blip.kr/v1/file/021ec61ff1c9936943383b84236a0e69",
-                        userId = "1",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교"
-                    )
-                ),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://cdn.newsculture.press/news/photo/202308/529742_657577_5726.jpg",
-                        userId = "2",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교",
-                    )
-                ),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://mblogthumb-phinf.pstatic.net/MjAyMTEwMzFfMTY1/MDAxNjM1NjUzMTI2NjI3.xXYQteLLoWLKcR9YnXS0Hk_y-DInauMzF25g7FxlcScg.2Y-neBBMVoP2IhcwzX2Zy2HB2d8EnM_cY76FVLuk_1Yg.JPEG.ssun2415/IMG_4148.jpg?type=w800",
-                        userId = "3",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교"
-                    )
-                )
-            )
-        )
+                }
+                is ModelState.Success -> {
+                    it.data?.let { mainItems ->
+                        mainAdapter.updateView(mainItems)
+                    }
+                }
+                is ModelState.Error -> {
+
+                }
+                else ->{
+                    //do nothing
+                }
+            }
+        }
     }
 
     private fun initChipGroup() {
@@ -488,11 +391,20 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 selectedChip?.setTagStyle(isBlackBackground = false)
                 chip.setTagStyle(isBlackBackground = true)
                 selectedChip = chip
+
+                getUserData(tag)      // 현재 카테고리에 맞는 데이터 가져오기
             }
             bind {
                 chipGroup.addView(chip)
             }
         }
+
+        // 전체 유저 가져오기
+        // 페이지 0부터
+    }
+
+    private fun getUserData(tag: Tag) {
+        viewModel.initMain(tag)
     }
 
     override fun onResume() {

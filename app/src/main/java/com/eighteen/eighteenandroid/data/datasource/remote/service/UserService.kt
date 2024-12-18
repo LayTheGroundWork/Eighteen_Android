@@ -29,8 +29,8 @@ interface UserService {
     suspend fun postLogin(@Query("phoneNumber") phoneNumber: String): Response<ApiResult<String>>
 
     @GET("/v1/api/{userType}/find-all")
-    suspend fun getAllUser(@Path("userType") userType: String, @Query("page") page: Int, @Query("size") size: Int): Response<ApiResult<List<UserResponse>>>
+    suspend fun getAllUser(@Path("userType") userType: String, @Query("page") page: Int, @Query("size") size: Int = 10): Response<ApiResult<UserResponse>>
 
     @GET("/v1/api/{userType}/find-all-by-category/{category}")
-    suspend fun getCategoryUser(@Path("userType") userType: String, @Path("category") category: String, @Query("page") page: Int, @Query("size") size: Int)
+    suspend fun getCategoryUser(@Path("userType") userType: String, @Path("category") category: String, @Query("page") page: Int, @Query("size") size: Int = 10): Response<ApiResult<UserResponse>>
 }
