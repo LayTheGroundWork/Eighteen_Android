@@ -35,34 +35,31 @@ class MainViewModel @Inject constructor(
     var popularUserPosition = 0
     var pageScrollPosition = 0
 
+    /** 메인화면 전체 데이터 */
     private val _mainItemStateFlow = MutableStateFlow<ModelState<List<MainItem>>>(ModelState.Empty())
     val mainItemStateFlow: StateFlow<ModelState<List<MainItem>>>
         get() = _mainItemStateFlow.asStateFlow()
 
-    /** 현재 페이지 정보 */
-    private var currentPage = 0
+    /** 무한 스크롤을 위한 새로 불러온 데이터 */
+    private val _appendStateFlow = MutableStateFlow<ModelState<List<MainItem>>>(ModelState.Empty())
+    val appendStateFlow: StateFlow<ModelState<List<MainItem>>>
+        get() = _appendStateFlow.asStateFlow()
 
-    /** 전체 페이지 수 */
-    private val _totalPage = MutableLiveData<Int>()
-    val totalPage: LiveData<Int>
-        get() = _totalPage
-
-    /** Category tag */
-    private val _category = MutableLiveData<Tag>()
-    val category: LiveData<Tag>
-        get() = _category
+    /** 남은 페이지 목록 */
+    private val _pageNumList = MutableLiveData<MutableList<Int>>()
+    val pageNumList: LiveData<MutableList<Int>>
+        get() = _pageNumList
 
     init {
         initMain(Tag.ALL)
     }
 
-    /** 화면 초기화 */
-    private fun resetPage() {
-        currentPage = 0
-    }
-
-    fun setPage(page: Int) {
-        currentPage = page
+    fun removePage(page: Int) {
+        val pages = _pageNumList.value
+        pages?.let {
+            it.remove(page)
+            _pageNumList.postValue(it)
+        }
     }
 
     fun initMain(category: Tag) {
@@ -70,14 +67,6 @@ class MainViewModel @Inject constructor(
 
         viewModelScope.launch {
             _mainItemStateFlow.value = ModelState.Loading()
-
-            resetPage()
-
-            // 로그인 상태 확인
-            val authTokenStateFlow = getAuthTokenFlowUseCase.invoke().stateIn(
-                viewModelScope,
-                SharingStarted.Eagerly, null
-            )
 
             // TODO. val popularTeenInitialState (인기 Teen)
 
@@ -110,6 +99,12 @@ class MainViewModel @Inject constructor(
                 )
             )
 
+            // 로그인 상태 확인
+            val authTokenStateFlow = getAuthTokenFlowUseCase.invoke().stateIn(
+                viewModelScope,
+                SharingStarted.Eagerly, null
+            )
+
             val anotherTeenInitialState = if(authTokenStateFlow.value == null) {
                 // 게스트
                 fetchAnotherUser(category, USER_TYPE_GUEST, 0).await()
@@ -119,7 +114,16 @@ class MainViewModel @Inject constructor(
             }
 
             anotherTeenInitialState.onSuccess {
-                _totalPage.postValue(it.totalPageCount) // 총 페이지
+                if(it.totalPageCount > 1) {
+                    val pages = mutableListOf<Int>()
+
+                    // 첫 번째 페이지(0)를 제외한 페이지 목록
+                    for (page in 1 until it.totalPageCount) {
+                        pages.add(page)
+                    }
+
+                    _pageNumList.postValue(pages)
+                }
 
                 it.users.forEach { user ->
                     items.add(
@@ -141,19 +145,45 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /** 또 다른 Teen 무한 스크롤, 다음 페이지 유저 정보 가져오기 */
+    fun requestNextPage(category: Tag, page: Int) {
+        viewModelScope.launch {
+            val items = mutableListOf<MainItem>()
+
+            // 로딩 시작
+            _appendStateFlow.value = ModelState.Loading()
+
+            // 로그인 상태 확인
+            val authTokenStateFlow = getAuthTokenFlowUseCase.invoke().stateIn(
+                viewModelScope,
+                SharingStarted.Eagerly, null
+            )
+
+            val anotherTeenInitialState = if(authTokenStateFlow.value == null) {
+                // 게스트
+                fetchAnotherUser(category, USER_TYPE_GUEST, page).await()
+            } else {
+                // 유저
+                fetchAnotherUser(category, USER_TYPE_SIGNIN, page).await()
+            }
+
+            anotherTeenInitialState.onSuccess {
+                it.users.forEach { user ->
+                    items.add(
+                        MainItem.UserView(user)
+                    )
+                }
+
+                _appendStateFlow.value = ModelState.Success(items)
+            }.onFailure { e ->
+                _appendStateFlow.value = ModelState.Error(throwable = e)
+            }
+        }
+    }
+
     private fun fetchAnotherUser(category: Tag, userType: String, page: Int) = viewModelScope.async {
         getUserUseCase.invoke(category.name, userType, page)
     }
-
-//    private suspend fun fetchUserData() = viewModelScope.async {
-//        userUseCase.invoke().onSuccess {
-////            ModelState.Success(it)
-//            _userData.value = it
-//        }.onFailure { e ->
-//            Log.e(TAG, e.toString())
-////            ModelState.Error(e)
-//        }
-//    }
 
     companion object {
         const val TAG = "MainViewModel"

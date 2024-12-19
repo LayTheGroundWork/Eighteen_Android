@@ -45,7 +45,6 @@ import kotlinx.coroutines.launch
 class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::inflate) {
     private val viewModel by viewModels<MainViewModel>()
 
-    private var selectedChip: Chip? = null
     private lateinit var mainAdapter: MainAdapter
 
 //    private var aboutTeenList = listOf<AboutTeen>()
@@ -60,7 +59,11 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
     private var autoScrollJob: Job? = null
     private var isAutoScrolling = false
 
-    private var pageNumList = mutableListOf<Int>()
+    // 현재 카테고리
+    private var selectedChip: Chip? = null     // 칩 버튼 View
+    private var category: Tag = Tag.ALL        // 카테고리 정보
+
+    private lateinit var _pageNumList: List<Int>
 
     override fun initView() {
         initChipGroup()
@@ -121,6 +124,29 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                         if (dy > 0 && btnScrollTop.visibility == View.GONE) {
                             btnScrollTop.startAnimation(fadeIn)
                             btnScrollTop.visibility = View.VISIBLE
+                        }
+
+                        val layoutManager = (layoutManager as? LinearLayoutManager)
+
+                        val lastVisibleItemPosition = layoutManager?.findLastCompletelyVisibleItemPosition()
+                        val itemTotalCount = recyclerView.adapter!!.itemCount-1
+
+                        if (!canScrollVertically(-1)) {
+                            isTop = true
+                        } else {
+                            isTop = false
+
+                            // 아래로 더 이동할 수 없을 때
+                            if(lastVisibleItemPosition != null && lastVisibleItemPosition == itemTotalCount) {
+                                if(_pageNumList.isNotEmpty()) {
+                                    // 남은 페이지 유저 목록이 있다면
+                                    val page = _pageNumList.random() // 남은 페이지 번호 랜덤으로 가져오기
+                                    viewModel.removePage(page)        // 사용한 페이지는 목록에서 제거
+
+                                    // page 정보 가져오기
+                                    viewModel.requestNextPage(category, page)
+                                }
+                            }
                         }
                     }
 
@@ -351,13 +377,9 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
     }
 
     private fun initMainItemObserver() {
-        viewModel.totalPage.observe(viewLifecycleOwner) {
-            // 총 페이지가 1보다 많을 때
-            if( it > 1 ) {
-                for( i in 1 until it ) {
-                    pageNumList.add(i)
-                }
-            }
+        // 남은 페이지 목록
+        viewModel.pageNumList.observe(viewLifecycleOwner) {
+            _pageNumList = it
         }
 
         collectInLifecycle(viewModel.mainItemStateFlow) {
@@ -378,6 +400,31 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 }
             }
         }
+
+        collectInLifecycle(viewModel.appendStateFlow) {
+            when(it) {
+                is ModelState.Loading -> {
+                    // do nothing
+                    // mainAdapter.addLoadingView()
+                }
+                is ModelState.Success -> {
+                    it.data?.let { mainItems ->
+                        // mainAdapter.removeLoadingView()
+                        mainAdapter.appendItems(mainItems) {
+                            // after Notify -> 기존 스크롤 유지
+                            moveToSavedPosition()
+                        }
+                    }
+                }
+                is ModelState.Error -> {
+
+                }
+                else -> {
+                    //do nothing
+                }
+            }
+        }
+
     }
 
     private fun initChipGroup() {
@@ -391,6 +438,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 selectedChip?.setTagStyle(isBlackBackground = false)
                 chip.setTagStyle(isBlackBackground = true)
                 selectedChip = chip
+                category = tag        // 현재 카테고리 값 저장
 
                 getUserData(tag)      // 현재 카테고리에 맞는 데이터 가져오기
             }
@@ -407,27 +455,30 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
         viewModel.initMain(tag)
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun moveToSavedPosition() {
         lifecycleScope.launch {
             delay(300)
-//            bind {
-//                // 마지막 스크롤 상태로 돌아오기
-//                if (viewModel.pageScrollPosition != -1) {
-//
-//                    rvMain.scrollToPosition(viewModel.pageScrollPosition)
-//
-//                    // LayoutManager에서 해당 위치의 아이템을 중앙에 위치시키도록 오프셋 조정
-//                    rvMain.post {
-//                        val layoutManager = rvMain.layoutManager as LinearLayoutManager
-//                        val viewAtPosition = layoutManager.findViewByPosition(viewModel.pageScrollPosition)
-//                        if (viewAtPosition != null) {
-//                            val offset = (rvMain.height - viewAtPosition.height) / 2
-//                            layoutManager.scrollToPositionWithOffset(viewModel.pageScrollPosition, offset)
-//                        }
-//                    }
-//                }
-//            }
+            bind {
+                // 마지막 스크롤 상태로 돌아오기
+                if (viewModel.pageScrollPosition != -1) {
+
+                    rvMain.scrollToPosition(viewModel.pageScrollPosition)
+
+                    // LayoutManager에서 해당 위치의 아이템을 중앙에 위치시키도록 오프셋 조정
+                    rvMain.post {
+                        val layoutManager = rvMain.layoutManager as LinearLayoutManager
+                        val viewAtPosition =
+                            layoutManager.findViewByPosition(viewModel.pageScrollPosition)
+                        if (viewAtPosition != null) {
+                            val offset = (rvMain.height - viewAtPosition.height) / 2
+                            layoutManager.scrollToPositionWithOffset(
+                                viewModel.pageScrollPosition,
+                                offset
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

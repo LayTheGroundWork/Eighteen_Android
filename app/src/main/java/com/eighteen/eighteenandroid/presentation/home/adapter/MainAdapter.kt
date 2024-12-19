@@ -258,9 +258,6 @@ class MainAdapter(
             private val listener: MainAdapterListener
         ) : CommonViewHolder(binding) {
             fun bind(item: MainItem, itemCount: Int, position: Int) {
-                if(itemCount -1 == position) {
-                    itemView.setPadding(0, 0, 0, context.dp2Px(60))
-                }
                 val userView = item as? MainItem.UserView
                 with(binding) {
                     userView?.let {
@@ -331,5 +328,20 @@ class MainAdapter(
 
     fun updateView(list: List<MainItem>) {
         submitList(list)
+    }
+
+    // 기존 데이터를 보존하면서 새 데이터만 추가하는 메소드
+    fun appendItems(newItems: List<MainItem>, afterNotify: () -> Unit) {
+        val currentList = currentList.toMutableList()
+        val startPosition = currentList.size
+
+        listener.saveScrollPosition(startPosition - 1)    // 기존 스크롤 위치 저장
+        currentList.addAll(newItems)
+
+        submitList(currentList) {
+            // submitList 콜백에서 새로운 아이템에 대해서만 notify
+            notifyItemRangeInserted(startPosition, newItems.size)
+            afterNotify()
+        }
     }
 }
