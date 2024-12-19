@@ -17,6 +17,7 @@ import com.eighteen.eighteenandroid.domain.usecase.GetAuthTokenFlowUseCase
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -152,6 +153,7 @@ class MainViewModel @Inject constructor(
 
             // 로딩 시작
             _appendStateFlow.value = ModelState.Loading()
+            delay(1000)
 
             // 로그인 상태 확인
             val authTokenStateFlow = getAuthTokenFlowUseCase.invoke().stateIn(

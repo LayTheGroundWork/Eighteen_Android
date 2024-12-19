@@ -15,6 +15,7 @@ import com.eighteen.eighteenandroid.databinding.ItemDividerBinding
 import com.eighteen.eighteenandroid.databinding.ItemMainAboutTeenListviewBinding
 import com.eighteen.eighteenandroid.databinding.ItemMainHeaderBinding
 import com.eighteen.eighteenandroid.databinding.ItemMainHeaderMoreBinding
+import com.eighteen.eighteenandroid.databinding.ItemMainLoadingBinding
 import com.eighteen.eighteenandroid.databinding.ItemMainPopularTeenListviewBinding
 import com.eighteen.eighteenandroid.databinding.ItemMainTournamentListviewBinding
 import com.eighteen.eighteenandroid.databinding.ItemTeenBinding
@@ -71,6 +72,7 @@ class MainAdapter(
         const val USER_VIEW = 5
         const val ABOUT_TEEN_LIST = 6
         const val TOURNAMENT_LIST = 7
+        const val LOADING_VIEW = 8
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommonViewHolder {
@@ -114,6 +116,11 @@ class MainAdapter(
                 CommonViewHolder.TournamentListViewHolder(itemBinding, listener)
             }
 
+            LOADING_VIEW -> {
+                val itemBinding = ItemMainLoadingBinding.inflate(layoutInflater, parent, false)
+                CommonViewHolder.LoadingViewHolder(itemBinding)
+            }
+
             else -> throw IllegalArgumentException("Invalid ViewType")
         }
     }
@@ -148,6 +155,10 @@ class MainAdapter(
                 (getItem(position) as? MainItem.DividerView)?.let { holder.bind(it) }
             }
 
+            is CommonViewHolder.LoadingViewHolder -> {
+                (getItem(position) as? MainItem.LoadingView)?.let { holder.bind((it)) }
+            }
+
             else -> throw IllegalArgumentException("Invalid ViewHolder")
         }
     }
@@ -161,6 +172,7 @@ class MainAdapter(
             is MainItem.AboutTeenListView -> ABOUT_TEEN_LIST
             is MainItem.TournamentListView -> TOURNAMENT_LIST
             is MainItem.UserView -> USER_VIEW
+            is MainItem.LoadingView -> LOADING_VIEW
         }
     }
 
@@ -324,6 +336,14 @@ class MainAdapter(
                 // ...
             }
         }
+
+        class LoadingViewHolder(
+            private val binding: ItemMainLoadingBinding
+        ): CommonViewHolder(binding) {
+            fun bind(item: MainItem) {
+                // ...
+            }
+        }
     }
 
     fun updateView(list: List<MainItem>) {
@@ -333,14 +353,30 @@ class MainAdapter(
     // 기존 데이터를 보존하면서 새 데이터만 추가하는 메소드
     fun appendItems(newItems: List<MainItem>, afterNotify: () -> Unit) {
         val currentList = currentList.toMutableList()
-        val startPosition = currentList.size
+        currentList.remove(MainItem.LoadingView)
+        notifyItemRangeRemoved(currentList.size, 1)
 
+        val startPosition = currentList.size
         listener.saveScrollPosition(startPosition - 1)    // 기존 스크롤 위치 저장
         currentList.addAll(newItems)
 
         submitList(currentList) {
             // submitList 콜백에서 새로운 아이템에 대해서만 notify
             notifyItemRangeInserted(startPosition, newItems.size)
+            afterNotify()
+        }
+    }
+
+    fun addLoadingView( afterNotify: () -> Unit ) {
+        val currentList = currentList.toMutableList()
+        val startPosition = currentList.size
+
+        currentList.add(MainItem.LoadingView)
+        listener.saveScrollPosition(startPosition - 1)    // 기존 스크롤 위치 저장
+
+        submitList(currentList) {
+            // submitList 콜백에서 새로운 아이템에 대해서만 notify
+            notifyItemRangeInserted(startPosition, 1)
             afterNotify()
         }
     }

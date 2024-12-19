@@ -21,6 +21,7 @@ import com.eighteen.eighteenandroid.presentation.BaseFragment
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.createChip
+import com.eighteen.eighteenandroid.presentation.common.dp2Px
 import com.eighteen.eighteenandroid.presentation.common.findViewHolderOrNull
 import com.eighteen.eighteenandroid.presentation.common.setTagStyle
 import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
@@ -145,6 +146,8 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
                                     // page 정보 가져오기
                                     viewModel.requestNextPage(category, page)
+                                } else {
+                                    binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
                                 }
                             }
                         }
@@ -152,12 +155,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                         super.onScrollStateChanged(recyclerView, newState)
-
-                        if (!canScrollVertically(-1)) {
-                            isTop = true
-                        } else {
-                            isTop = false
-                        }
 
                         val layoutManager = (layoutManager as? LinearLayoutManager)
 
@@ -405,12 +402,13 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
             when(it) {
                 is ModelState.Loading -> {
                     // do nothing
-                    // mainAdapter.addLoadingView()
+                    mainAdapter.addLoadingView() {
+                        moveToSavedPosition()
+                    }
                 }
                 is ModelState.Success -> {
-                    it.data?.let { mainItems ->
-                        // mainAdapter.removeLoadingView()
-                        mainAdapter.appendItems(mainItems) {
+                    it.data?.let { newItems ->
+                        mainAdapter.appendItems(newItems) {
                             // after Notify -> 기존 스크롤 유지
                             moveToSavedPosition()
                         }
