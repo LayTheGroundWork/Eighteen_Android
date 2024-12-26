@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp">
+
+    <TextView
+        android:id="@+id/tvUserName"
+        style="@style/pretendard_bold_13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="가나다라 유저이름" />
+
+    <TextView
+        android:id="@+id/tvUserId"
+        style="@style/pretendard_regular_13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toStartOf="@id/tvUserName"
+        app:layout_constraintTop_toBottomOf="@id/tvUserName"
+        tools:text="유저 id" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/grey_03"
+        app:layout_constraintTop_toBottomOf="@id/tvUserId" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -57,7 +57,13 @@ class MainViewModel @Inject constructor(
 
     /*fun 무한_스크롤() {
         val items = mainItems.value // 기존 데이터
-        items.add(새로 받아온 놈들)
+
+        if(로딩 중) {
+            item + 로딩 뷰
+        } else {
+            items.add(새로 받아온 놈들)
+        }
+
         _mainItems.value = items
     }*/
 
