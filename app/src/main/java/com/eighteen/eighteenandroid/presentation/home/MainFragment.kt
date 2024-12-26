@@ -60,6 +60,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
     private var autoScrollJob: Job? = null
     private var isAutoScrolling = false
     private var isLoading = false
+    private var isLastPage = false
 
     // 현재 카테고리
     private var selectedChip: Chip? = null     // 칩 버튼 View
@@ -133,29 +134,67 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                         val lastVisibleItemPosition = layoutManager?.findLastCompletelyVisibleItemPosition()
                         val itemTotalCount = recyclerView.adapter!!.itemCount-1
 
+                        if(isLastPage) {
+                            // isLastPage가 true일 때
+                            if(lastVisibleItemPosition == itemTotalCount) {
+                                // 최하단에 도달했을 때만 60dp
+                                rvMain.post {
+                                    rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
+                                    moveToSavedPosition()
+                                }
+                            } else {
+                                // 그 외에는 20dp
+                                binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(20))
+                            }
+                        } else {
+                            // isLastPage가 false일 때는 항상 20dp
+                            binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(20))
+
+                            if(lastVisibleItemPosition != null && lastVisibleItemPosition == itemTotalCount) {
+                                if(_pageNumList.isEmpty()) {
+                                    isLastPage = true
+                                    binding.rvMain.post {
+                                        binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
+                                        moveToSavedPosition()
+                                    }
+                                } else {
+                                    isLastPage = false
+                                    if(!isLoading) {
+                                        val page = _pageNumList.random()
+                                        viewModel.removePage(page)
+                                        viewModel.requestNextPage(category, page)
+                                    }
+                                }
+                            }
+                        }
+
                         if (!canScrollVertically(-1)) {
                             isTop = true
                         } else {
                             isTop = false
 
                             // 아래로 더 이동할 수 없을 때
-                            if(lastVisibleItemPosition != null && lastVisibleItemPosition == itemTotalCount) {
-                                if(_pageNumList.isEmpty()) {
-                                    binding.rvMain.post {
-                                        binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
-                                        moveToSavedPosition()
-                                    }
-                                } else {
-                                    if(!isLoading) {
-                                        // 남은 페이지 유저 목록이 있다면
-                                        val page = _pageNumList.random() // 남은 페이지 번호 랜덤으로 가져오기
-                                        viewModel.removePage(page)        // 사용한 페이지는 목록에서 제거
-
-                                        // page 정보 가져오기
-                                        viewModel.requestNextPage(category, page)
-                                    }
-                                }
-                            }
+//                            if(lastVisibleItemPosition != null && lastVisibleItemPosition == itemTotalCount) {
+//                                if(_pageNumList.isEmpty()) {
+//                                    isLastPage = true
+//
+//                                    binding.rvMain.post {
+//                                        binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
+//                                        moveToSavedPosition()
+//                                    }
+//                                } else {
+//                                    isLastPage = false
+//
+//                                    if(!isLoading) {
+//                                        // 남은 페이지 유저 목록이 있다면
+//                                        val page = _pageNumList.random() // 남은 페이지 번호 랜덤으로 가져오기
+//                                        viewModel.removePage(page)        // 사용한 페이지는 목록에서 제거
+//
+//                                        // page 정보 가져오기
+//                                        viewModel.requestNextPage(category, page)
+//                                    }
+//                                }
+//                            }
                         }
                     }
 
