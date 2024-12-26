@@ -59,6 +59,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
     private var autoScrollJob: Job? = null
     private var isAutoScrolling = false
+    private var isLoading = false
 
     // 현재 카테고리
     private var selectedChip: Chip? = null     // 칩 버튼 View
@@ -139,15 +140,20 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
                             // 아래로 더 이동할 수 없을 때
                             if(lastVisibleItemPosition != null && lastVisibleItemPosition == itemTotalCount) {
-                                if(_pageNumList.isNotEmpty()) {
-                                    // 남은 페이지 유저 목록이 있다면
-                                    val page = _pageNumList.random() // 남은 페이지 번호 랜덤으로 가져오기
-                                    viewModel.removePage(page)        // 사용한 페이지는 목록에서 제거
-
-                                    // page 정보 가져오기
-                                    viewModel.requestNextPage(category, page)
+                                if(_pageNumList.isEmpty()) {
+                                    binding.rvMain.post {
+                                        binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
+                                        moveToSavedPosition()
+                                    }
                                 } else {
-                                    binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
+                                    if(!isLoading) {
+                                        // 남은 페이지 유저 목록이 있다면
+                                        val page = _pageNumList.random() // 남은 페이지 번호 랜덤으로 가져오기
+                                        viewModel.removePage(page)        // 사용한 페이지는 목록에서 제거
+
+                                        // page 정보 가져오기
+                                        viewModel.requestNextPage(category, page)
+                                    }
                                 }
                             }
                         }
@@ -401,12 +407,15 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
         collectInLifecycle(viewModel.appendStateFlow) {
             when(it) {
                 is ModelState.Loading -> {
-                    // do nothing
+                    isLoading = true
+
                     mainAdapter.addLoadingView() {
                         moveToSavedPosition()
                     }
                 }
                 is ModelState.Success -> {
+                    isLoading = false
+
                     it.data?.let { newItems ->
                         mainAdapter.appendItems(newItems) {
                             // after Notify -> 기존 스크롤 유지
@@ -455,7 +464,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
     private fun moveToSavedPosition() {
         lifecycleScope.launch {
-            delay(300)
             bind {
                 // 마지막 스크롤 상태로 돌아오기
                 if (viewModel.pageScrollPosition != -1) {

@@ -14,6 +14,6 @@
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
         app:lottie_rawRes="@raw/loading"
-        android:layout_width="47dp"
-        android:layout_height="47dp" />
+        android:layout_width="16dp"
+        android:layout_height="16dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
