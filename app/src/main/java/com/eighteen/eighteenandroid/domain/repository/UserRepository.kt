@@ -15,4 +15,6 @@ interface UserRepository {
     suspend fun login(phoneNumber: String): Result<AuthToken>
     suspend fun fetchAllUser(userType: String, page: Int): Result<UserUseCaseModel>
     suspend fun fetchCategoryUser(userType: String, category: String, page: Int): Result<UserUseCaseModel>
+    suspend fun postLikeUser(likedId: Int): Result<String>
+    suspend fun postLikeCancelUser(likedId: Int): Result<String>
 }

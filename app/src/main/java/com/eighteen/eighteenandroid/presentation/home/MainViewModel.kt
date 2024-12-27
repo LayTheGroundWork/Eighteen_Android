@@ -14,6 +14,7 @@ import com.eighteen.eighteenandroid.domain.model.MainItem
 import com.eighteen.eighteenandroid.domain.model.Tournament
 import com.eighteen.eighteenandroid.domain.usecase.GetUserUseCase
 import com.eighteen.eighteenandroid.domain.usecase.GetAuthTokenFlowUseCase
+import com.eighteen.eighteenandroid.domain.usecase.UserLikeUseCase
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -30,37 +31,34 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val resourceProvider: ResourceProvider,
     private val getUserUseCase: GetUserUseCase,
-    private val getAuthTokenFlowUseCase: GetAuthTokenFlowUseCase
+    private val getAuthTokenFlowUseCase: GetAuthTokenFlowUseCase,
+    private val userLikeUseCase: UserLikeUseCase
 ) : ViewModel() {
 
     var popularUserPosition = 0
-    var pageScrollPosition = 0
 
     /** 메인화면 전체 데이터 */
     private val _mainItemStateFlow = MutableStateFlow<ModelState<List<MainItem>>>(ModelState.Empty())
     val mainItemStateFlow: StateFlow<ModelState<List<MainItem>>>
         get() = _mainItemStateFlow.asStateFlow()
 
-    /** 무한 스크롤을 위한 새로 불러온 데이터 */
-    private val _appendStateFlow = MutableStateFlow<ModelState<List<MainItem>>>(ModelState.Empty())
-    val appendStateFlow: StateFlow<ModelState<List<MainItem>>>
-        get() = _appendStateFlow.asStateFlow()
-
     /** 남은 페이지 목록 */
     private val _pageNumList = MutableLiveData<MutableList<Int>>()
     val pageNumList: LiveData<MutableList<Int>>
         get() = _pageNumList
 
+    /** 좋아요 */
+    private val _userLikeStateFlow = MutableStateFlow<ModelState<Int>>(ModelState.Empty())
+    val userLikeStateFlow: StateFlow<ModelState<Int>>
+        get() = _userLikeStateFlow.asStateFlow()
+
+    /** 좋아요 취소 */
+    private val _userLikeCancelStateFlow = MutableStateFlow<ModelState<Int>>(ModelState.Empty())
+    val userLikeCancelStateFlow: StateFlow<ModelState<Int>>
+        get() = _userLikeCancelStateFlow.asStateFlow()
+
     init {
         initMain(Tag.ALL)
-    }
-
-    fun removePage(page: Int) {
-        val pages = _pageNumList.value
-        pages?.let {
-            it.remove(page)
-            _pageNumList.postValue(it)
-        }
     }
 
     fun initMain(category: Tag) {
@@ -149,10 +147,10 @@ class MainViewModel @Inject constructor(
     /** 또 다른 Teen 무한 스크롤, 다음 페이지 유저 정보 가져오기 */
     fun requestNextPage(category: Tag, page: Int) {
         viewModelScope.launch {
-            val items = mutableListOf<MainItem>()
+            val items = _mainItemStateFlow.value.data?.toMutableList()
 
             // 로딩 시작
-            _appendStateFlow.value = ModelState.Loading()
+            _mainItemStateFlow.value = ModelState.Loading()
             delay(1000)
 
             // 로그인 상태 확인
@@ -169,22 +167,67 @@ class MainViewModel @Inject constructor(
                 fetchAnotherUser(category, USER_TYPE_SIGNIN, page).await()
             }
 
-            anotherTeenInitialState.onSuccess {
-                it.users.forEach { user ->
-                    items.add(
-                        MainItem.UserView(user)
-                    )
-                }
+            anotherTeenInitialState
+                .onSuccess {
+                    it.users.forEach { user ->
+                        items?.add(
+                            MainItem.UserView(user)
+                        )
+                    }
 
-                _appendStateFlow.value = ModelState.Success(items)
-            }.onFailure { e ->
-                _appendStateFlow.value = ModelState.Error(throwable = e)
-            }
+                    _mainItemStateFlow.value = ModelState.Success(items)
+                }
+                .onFailure { e ->
+                    _mainItemStateFlow.value = ModelState.Error(throwable = e)
+                }
+        }
+    }
+
+    fun removePage(page: Int) {
+        val pages = _pageNumList.value
+        pages?.let {
+            it.remove(page)
+            _pageNumList.postValue(it)
         }
     }
 
     private fun fetchAnotherUser(category: Tag, userType: String, page: Int) = viewModelScope.async {
         getUserUseCase.invoke(category.name, userType, page)
+    }
+
+    fun requestUserLike(isLike: Boolean, likedId: Int) {
+        viewModelScope.launch {
+            if(isLike) { // 좋아요
+                _userLikeStateFlow.value = ModelState.Loading()
+
+                postLikeUser(likedId).await()
+                    .onSuccess {
+                        _userLikeStateFlow.value = ModelState.Success(likedId)
+                    }
+                    .onFailure {
+                        _userLikeStateFlow.value = ModelState.Error(throwable = it)
+                    }
+
+            } else { // 좋아요 취소
+                _userLikeCancelStateFlow.value = ModelState.Loading()
+
+                postLikeCancelUser(likedId).await()
+                    .onSuccess {
+                        _userLikeCancelStateFlow.value = ModelState.Success(likedId)
+                    }
+                    .onFailure {
+                        _userLikeCancelStateFlow.value = ModelState.Error(throwable = it)
+                    }
+            }
+        }
+    }
+
+    private fun postLikeUser(likedId: Int) = viewModelScope.async {
+        userLikeUseCase.invoke(true, likedId)
+    }
+
+    private fun postLikeCancelUser(likedId: Int) = viewModelScope.async {
+        userLikeUseCase.invoke(false, likedId)
     }
 
     companion object {

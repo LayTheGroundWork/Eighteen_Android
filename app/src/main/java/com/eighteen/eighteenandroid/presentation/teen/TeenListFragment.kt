@@ -58,24 +58,27 @@ class TeenListFragment: BaseFragment<FragmentTeenListBinding>(FragmentTeenListBi
             adapter.submitList(
                 listOf(
                     User(
+                        userId = 1,
                         userImage = "https://image.blip.kr/v1/file/021ec61ff1c9936943383b84236a0e69",
-                        userId = "1",
+                        uniqueId = "1",
                         userName = "김 에스더",
                         userAge = "16",
                         userSchoolName = "서울 중학교",
                         likeStatus = true
                     ),
                     User(
+                        userId = 2,
                         userImage = "https://cdn.newsculture.press/news/photo/202308/529742_657577_5726.jpg",
-                        userId = "2",
+                        uniqueId = "2",
                         userName = "김 에스더",
                         userAge = "16",
                         userSchoolName = "부천 중학교",
                         likeStatus = false
                     ),
                     User(
+                        userId = 3,
                         userImage = "https://mblogthumb-phinf.pstatic.net/MjAyMTEwMzFfMTY1/MDAxNjM1NjUzMTI2NjI3.xXYQteLLoWLKcR9YnXS0Hk_y-DInauMzF25g7FxlcScg.2Y-neBBMVoP2IhcwzX2Zy2HB2d8EnM_cY76FVLuk_1Yg.JPEG.ssun2415/IMG_4148.jpg?type=w800",
-                        userId = "3",
+                        uniqueId = "3",
                         userName = "김 에스더",
                         userAge = "16",
                         userSchoolName = "인천 중학교",

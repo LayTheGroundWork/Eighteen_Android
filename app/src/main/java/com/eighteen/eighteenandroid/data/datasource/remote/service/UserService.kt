@@ -33,4 +33,11 @@ interface UserService {
 
     @GET("/v1/api/{userType}/find-all-by-category/{category}")
     suspend fun getCategoryUser(@Path("userType") userType: String, @Path("category") category: String, @Query("page") page: Int, @Query("size") size: Int = 10): Response<ApiResult<UserResponse>>
+
+    @POST("/v1/api/user/like")
+    suspend fun postLikeUser(@Query("likedId") likedId: Int): Response<ApiResult<String>>
+
+    @POST("/v1/api/user/like-cancel")
+    suspend fun postLikeCancelUser(@Query("likedId") likedId: Int): Response<ApiResult<String>>
+
 }

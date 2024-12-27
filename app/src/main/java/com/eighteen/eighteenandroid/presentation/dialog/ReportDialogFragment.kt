@@ -48,7 +48,7 @@ class ReportDialogFragment : BaseDialogFragment<DialogReportContentBinding>(Dial
 
         fun newInstance(user: User): ReportDialogFragment {
             val bundle = Bundle().apply {
-                putString(KEY_USER_ID, user.userId)
+                putString(KEY_USER_ID, user.uniqueId)
                 putString(KEY_USER_NAME, user.userName)
             }
             return ReportDialogFragment().apply { arguments = bundle }

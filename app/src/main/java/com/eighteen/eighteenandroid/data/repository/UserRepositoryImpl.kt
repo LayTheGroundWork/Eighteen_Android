@@ -48,6 +48,20 @@ class UserRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun postLikeUser(likedId: Int): Result<String> =
+        runCatching {
+            userService.postLikeUser(likedId).mapper {
+                it.data ?: throw ApiException.Unknown
+            }
+        }
+
+    override suspend fun postLikeCancelUser(likedId: Int): Result<String> =
+        runCatching {
+            userService.postLikeCancelUser(likedId).mapper {
+                it.data ?: throw ApiException.Unknown
+            }
+        }
+
     override suspend fun fetchUserDetailInfo(id: String): Result<Profile> = runCatching {
 //                userService.postProfileDetailInfo(id).mapper { profileDetailResponse ->
 //            ProfileDetailMapper.asProfileDetailModel(profileDetailResponse = profileDetailResponse)

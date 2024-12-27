@@ -9,7 +9,8 @@ data class UserResponse(
 )
 
 data class UserDto(
-    val profileImage: String,
+    val id: Int,
+    val profileImage: String?,
     val uniqueId: String,
     val nickName: String,
     val birthDay: String,

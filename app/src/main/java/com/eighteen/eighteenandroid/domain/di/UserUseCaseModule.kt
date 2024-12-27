@@ -8,6 +8,7 @@ import com.eighteen.eighteenandroid.domain.usecase.GetMyProfileUseCase
 import com.eighteen.eighteenandroid.domain.usecase.GetUserDetailInfoUseCase
 import com.eighteen.eighteenandroid.domain.usecase.LoginUseCase
 import com.eighteen.eighteenandroid.domain.usecase.SignUpUseCase
+import com.eighteen.eighteenandroid.domain.usecase.UserLikeUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,4 +45,8 @@ object UserUseCaseModule {
     @Provides
     @Singleton
     fun provideGetUserUseCase(repository: UserRepository) = GetUserUseCase(repository = repository)
+
+    @Provides
+    @Singleton
+    fun provideUserLikeUseCase(repository: UserRepository) = UserLikeUseCase(repository = repository)
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.PagerSnapHelper
@@ -22,7 +23,6 @@ import com.eighteen.eighteenandroid.databinding.ItemTeenBinding
 import com.eighteen.eighteenandroid.domain.model.MainItem
 import com.eighteen.eighteenandroid.domain.model.Tournament
 import com.eighteen.eighteenandroid.domain.model.User
-import com.eighteen.eighteenandroid.presentation.common.dp2Px
 import com.eighteen.eighteenandroid.presentation.home.adapter.diffcallback.MainItemDiffCallBack
 
 interface MainAdapterListener {
@@ -30,7 +30,7 @@ interface MainAdapterListener {
     fun onUserClicks(user: User)
 
     /** 유저 좋아요 클릭 */
-    fun onUserLikeClicks(user: User)
+    fun onUserLikeClicks(likeBtn: ImageButton, user: User)
 
     /** 유저 채팅 클릭 */
     fun onUserChatClicks(user: User)
@@ -52,9 +52,6 @@ interface MainAdapterListener {
 
     /** 이전에 보여진 유저 포지션 저장*/
     fun saveUserPosition(position: Int)
-
-    /** 현재 메인화면 스크롤 포지션 저장*/
-    fun saveScrollPosition(position: Int)
 
     fun startAutoScroll()
 
@@ -278,22 +275,26 @@ class MainAdapter(
                         tvSchool.text = user.userSchoolName
                         tvName.text = userName
                         Glide.with(context).load(user.userImage).into(imgTodayTeen) // 프로필 이미지
+                        btnLike.isSelected = user.likeStatus            // 좋아요 버튼 Selector
 
                         imgTodayTeen.setOnClickListener {
                             listener.onUserClicks(user)
-                            listener.saveScrollPosition(position)   // 현재 메인화면 스크롤 position 저장
                         }
                         btnChat.setOnClickListener {
                             listener.onUserChatClicks(user)
                         }
                         btnLike.setOnClickListener {
-                            listener.onUserLikeClicks(user)
+                            listener.onUserLikeClicks(btnLike, user)
                         }
                         btnSetting.setOnClickListener {
                             listener.onUserMoreClicks(btnSetting, user)
                         }
                     }
                 }
+            }
+
+            fun updateLikeBtn(isLike: Boolean) {
+                binding.btnLike.isSelected = isLike
             }
         }
 
@@ -350,34 +351,44 @@ class MainAdapter(
         submitList(list)
     }
 
-    // 기존 데이터를 보존하면서 새 데이터만 추가하는 메소드
-    fun appendItems(newItems: List<MainItem>, afterNotify: () -> Unit) {
+    fun addLoadingView(scrollToPosition: (Int) -> Unit) {
         val currentList = currentList.toMutableList()
-        currentList.remove(MainItem.LoadingView)
-        notifyItemRangeRemoved(currentList.size, 1)
-
-        val startPosition = currentList.size
-        listener.saveScrollPosition(startPosition - 1)    // 기존 스크롤 위치 저장
-        currentList.addAll(newItems)
+        currentList.add(MainItem.LoadingView)
 
         submitList(currentList) {
-            // submitList 콜백에서 새로운 아이템에 대해서만 notify
-            notifyItemRangeInserted(startPosition, newItems.size)
-            afterNotify()
+            scrollToPosition(currentList.size - 1)
         }
     }
 
-    fun addLoadingView( afterNotify: () -> Unit ) {
+    fun removeLoadingView() {
         val currentList = currentList.toMutableList()
-        val startPosition = currentList.size
+        if(currentList.lastIndex > 0) currentList.removeAt(currentList.lastIndex)
 
-        currentList.add(MainItem.LoadingView)
-        listener.saveScrollPosition(startPosition - 1)    // 기존 스크롤 위치 저장
+        submitList(currentList)
+    }
 
-        submitList(currentList) {
-            // submitList 콜백에서 새로운 아이템에 대해서만 notify
-            notifyItemRangeInserted(startPosition, 1)
-            afterNotify()
+    fun updateUserLikeStatus(recyclerView: RecyclerView, userId: Int, isLike: Boolean) {
+        // 전체 아이템 중에서 해당 userId를 가진 유저 아이템 찾기
+        val position = currentList.indexOfFirst { item ->
+            when (item) {
+                is MainItem.UserView -> item.user.userId == userId
+                else -> false
+            }
+        }
+
+        if (position != -1) {
+            // 해당 위치의 ViewHolder 찾기
+            val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? CommonViewHolder.UserViewHolder
+
+            // ViewHolder가 현재 화면에 보이는 경우 직접 업데이트
+            viewHolder?.updateLikeBtn(isLike)
+
+            // 데이터도 업데이트
+            val currentItem = currentList[position] as? MainItem.UserView
+            currentItem?.user?.likeStatus = isLike
+
+            // 해당 포지션만 갱신
+            notifyItemChanged(position)
         }
     }
 }

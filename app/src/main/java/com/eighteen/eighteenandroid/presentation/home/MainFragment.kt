@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.DisplayMetrics
 import android.view.View
 import android.view.animation.AlphaAnimation
+import android.widget.ImageButton
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -14,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.common.enums.Tag
 import com.eighteen.eighteenandroid.databinding.FragmentMainBinding
-import com.eighteen.eighteenandroid.domain.model.AboutTeen
 import com.eighteen.eighteenandroid.domain.model.Tournament
 import com.eighteen.eighteenandroid.domain.model.User
 import com.eighteen.eighteenandroid.presentation.BaseFragment
@@ -60,7 +60,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
     private var autoScrollJob: Job? = null
     private var isAutoScrolling = false
     private var isLoading = false
-    private var isLastPage = false
 
     // 현재 카테고리
     private var selectedChip: Chip? = null     // 칩 버튼 View
@@ -109,19 +108,32 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
     private fun initMainAdapter() {
         initMainAdapterListener()
 
-        mainAdapter =
-            MainAdapter(context = requireContext(), listener = mainAdapterListener).apply {
-                stateRestorationPolicy =
-                    RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY // 현재 스크롤 위치 저장
+        mainAdapter = MainAdapter(context = requireContext(), listener = mainAdapterListener).apply {
+                stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY // 현재 스크롤 위치 저장
             }
 
         bind {
             with(rvMain) {
                 adapter = mainAdapter
+                itemAnimator = null         // Item Notify animation 제거
                 addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
                     override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                         super.onScrolled(recyclerView, dx, dy)
+
+                        val lastVisibleItemPosition = (recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition()
+                        val itemTotalCount = recyclerView.adapter!!.itemCount-1
+
+                        // 스크롤이 끝에 도달했는지 확인
+                        if (::_pageNumList.isInitialized && !recyclerView.canScrollVertically(1) && lastVisibleItemPosition == itemTotalCount) {
+                            if( _pageNumList.isNotEmpty()) {
+                                if(!isLoading) {
+                                    val page = _pageNumList.random()
+                                    viewModel.removePage(page)
+                                    viewModel.requestNextPage(category, page)
+                                }
+                            }
+                        }
 
                         // 스크롤이 위로 되면 (dy < 0) 버튼 숨기기, 아래로 스크롤 시( dy > 0 ) 버튼 보여주기
                         if (dy > 0 && btnScrollTop.visibility == View.GONE) {
@@ -129,78 +141,15 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                             btnScrollTop.visibility = View.VISIBLE
                         }
 
-                        val layoutManager = (layoutManager as? LinearLayoutManager)
-
-                        val lastVisibleItemPosition = layoutManager?.findLastCompletelyVisibleItemPosition()
-                        val itemTotalCount = recyclerView.adapter!!.itemCount-1
-
-                        if(isLastPage) {
-                            // isLastPage가 true일 때
-                            if(lastVisibleItemPosition == itemTotalCount) {
-                                // 최하단에 도달했을 때만 60dp
-                                rvMain.post {
-                                    rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
-                                    moveToSavedPosition()
-                                }
-                            } else {
-                                // 그 외에는 20dp
-                                binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(20))
-                            }
-                        } else {
-                            // isLastPage가 false일 때는 항상 20dp
-                            binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(20))
-
-                            if(lastVisibleItemPosition != null && lastVisibleItemPosition == itemTotalCount) {
-                                if(_pageNumList.isEmpty()) {
-                                    isLastPage = true
-                                    binding.rvMain.post {
-                                        binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
-                                        moveToSavedPosition()
-                                    }
-                                } else {
-                                    isLastPage = false
-                                    if(!isLoading) {
-                                        val page = _pageNumList.random()
-                                        viewModel.removePage(page)
-                                        viewModel.requestNextPage(category, page)
-                                    }
-                                }
-                            }
-                        }
-
                         if (!canScrollVertically(-1)) {
                             isTop = true
                         } else {
                             isTop = false
-
-                            // 아래로 더 이동할 수 없을 때
-//                            if(lastVisibleItemPosition != null && lastVisibleItemPosition == itemTotalCount) {
-//                                if(_pageNumList.isEmpty()) {
-//                                    isLastPage = true
-//
-//                                    binding.rvMain.post {
-//                                        binding.rvMain.setPadding(0, 0, 0, requireContext().dp2Px(60))
-//                                        moveToSavedPosition()
-//                                    }
-//                                } else {
-//                                    isLastPage = false
-//
-//                                    if(!isLoading) {
-//                                        // 남은 페이지 유저 목록이 있다면
-//                                        val page = _pageNumList.random() // 남은 페이지 번호 랜덤으로 가져오기
-//                                        viewModel.removePage(page)        // 사용한 페이지는 목록에서 제거
-//
-//                                        // page 정보 가져오기
-//                                        viewModel.requestNextPage(category, page)
-//                                    }
-//                                }
-//                            }
                         }
                     }
 
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                         super.onScrollStateChanged(recyclerView, newState)
-
                         val layoutManager = (layoutManager as? LinearLayoutManager)
 
 //                        Log.i("MainScrollStateChanged", "findLastVisible = ${layoutManager?.findLastVisibleItemPosition().toString()}")
@@ -217,7 +166,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
                         when (newState) {
                             RecyclerView.SCROLL_STATE_IDLE -> {
-                                viewModel.pageScrollPosition = getCenterItemPosition(recyclerView)
 
                                 if (isTop && btnScrollTop.isVisible) {
                                     btnScrollTop.startAnimation(fadeOut)
@@ -238,27 +186,14 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
             // Top 버튼
             btnScrollTop.throttleClick(viewLifecycleOwner.lifecycleScope) {
-                appbarLayout.setExpanded(true, true)
-                rvMain.smoothScrollToPosition(0)
+                moveToTop()
             }
         }
+    }
 
-//        livedata.observe() {
-        // page1 -> 10개
-
-        // current
-        // 전체 리스트를 주진 않고
-
-//            current + 10
-//        }
-
-        // 마지막 아이템을 만나면
-
-        // 데이터 함수 호출
-
-        // 라이브데이터 값 바꾸고
-
-        // 뷰 갱신
+    private fun moveToTop() {
+        binding.appbarLayout.setExpanded(true, true)
+        binding.rvMain.scrollToPosition(0)
     }
 
     private fun initMainAdapterListener() {
@@ -274,9 +209,12 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
             /**
              * 유저 좋아요 클릭
              */
-            override fun onUserLikeClicks(user: User) {
+            override fun onUserLikeClicks(likeBtn: ImageButton, user: User) {
                 stopAutoScroll()
-                // TODO. User Like API 호출
+                val likeStatus = likeBtn.isSelected
+
+                // User Like API 호출
+                viewModel.requestUserLike(likeStatus.not(), likedId = user.userId)
             }
 
             /**
@@ -312,7 +250,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 when(title) {
                     "Teen" -> bottomNavigationView.selectedItemId = R.id.teenMainFragment
                     "채팅" -> bottomNavigationView.selectedItemId = R.id.fragmentChat
-                    "토너먼트" -> {}
+                    "토너먼트" -> bottomNavigationView.selectedItemId = R.id.fragmentRanking
                     "나만의 Teen" -> bottomNavigationView.selectedItemId = R.id.fragmentMyProfile
                 }
             }
@@ -360,10 +298,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
              */
             override fun saveUserPosition(position: Int) {
                 viewModel.popularUserPosition = position
-            }
-
-            override fun saveScrollPosition(position: Int) {
-                viewModel.pageScrollPosition = position
             }
 
             override fun startAutoScroll() {
@@ -424,12 +358,18 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
             _pageNumList = it
         }
 
-        collectInLifecycle(viewModel.mainItemStateFlow) {
+        collectInLifecycle(viewModel.mainItemStateFlow) { it ->
             when(it) {
                 is ModelState.Loading -> {
-
+                    isLoading = true
+                    mainAdapter.addLoadingView { lastPosition ->
+                        binding.rvMain.scrollToPosition(lastPosition)
+                    }
                 }
                 is ModelState.Success -> {
+                    isLoading = false
+                    mainAdapter.removeLoadingView()
+
                     it.data?.let { mainItems ->
                         mainAdapter.updateView(mainItems)
                     }
@@ -443,28 +383,42 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
             }
         }
 
-        collectInLifecycle(viewModel.appendStateFlow) {
+        collectInLifecycle(viewModel.userLikeStateFlow) {
             when(it) {
                 is ModelState.Loading -> {
-                    isLoading = true
 
-                    mainAdapter.addLoadingView() {
-                        moveToSavedPosition()
-                    }
                 }
                 is ModelState.Success -> {
-                    isLoading = false
-
-                    it.data?.let { newItems ->
-                        mainAdapter.appendItems(newItems) {
-                            // after Notify -> 기존 스크롤 유지
-                            moveToSavedPosition()
-                        }
+                    it.data?.let { userId ->
+                        mainAdapter.updateUserLikeStatus(binding.rvMain, userId, isLike = true)
                     }
                 }
+
                 is ModelState.Error -> {
 
                 }
+
+                else -> {
+                    //do nothing
+                }
+            }
+        }
+
+        collectInLifecycle(viewModel.userLikeCancelStateFlow) {
+            when(it) {
+                is ModelState.Loading -> {
+
+                }
+                is ModelState.Success -> {
+                    it.data?.let { userId ->
+                        mainAdapter.updateUserLikeStatus(binding.rvMain, userId, isLike = false)
+                    }
+                }
+
+                is ModelState.Error -> {
+
+                }
+
                 else -> {
                     //do nothing
                 }
@@ -499,31 +453,5 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
     private fun getUserData(tag: Tag) {
         viewModel.initMain(tag)
-    }
-
-    private fun moveToSavedPosition() {
-        lifecycleScope.launch {
-            bind {
-                // 마지막 스크롤 상태로 돌아오기
-                if (viewModel.pageScrollPosition != -1) {
-
-                    rvMain.scrollToPosition(viewModel.pageScrollPosition)
-
-                    // LayoutManager에서 해당 위치의 아이템을 중앙에 위치시키도록 오프셋 조정
-                    rvMain.post {
-                        val layoutManager = rvMain.layoutManager as LinearLayoutManager
-                        val viewAtPosition =
-                            layoutManager.findViewByPosition(viewModel.pageScrollPosition)
-                        if (viewAtPosition != null) {
-                            val offset = (rvMain.height - viewAtPosition.height) / 2
-                            layoutManager.scrollToPositionWithOffset(
-                                viewModel.pageScrollPosition,
-                                offset
-                            )
-                        }
-                    }
-                }
-            }
-        }
     }
 }

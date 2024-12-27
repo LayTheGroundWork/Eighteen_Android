@@ -32,8 +32,9 @@ object UserMapper {
         }
 
         return User(
-            userImage = profileImage,
-            userId = uniqueId,
+            userId = id,
+            userImage = profileImage?: "",
+            uniqueId = uniqueId,
             userName = nickName,
             userAge = calculateAge(birthDay).toString(),
             userSchoolName = schoolName,
