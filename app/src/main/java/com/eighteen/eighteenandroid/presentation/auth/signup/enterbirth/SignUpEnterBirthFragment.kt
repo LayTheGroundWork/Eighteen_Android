@@ -9,7 +9,7 @@ import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpPage
 import com.eighteen.eighteenandroid.presentation.common.WebViewUrl
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
-import com.eighteen.eighteenandroid.presentation.dialog.DatePickerDialogFragment
+import com.eighteen.eighteenandroid.presentation.dialog.datepicker.DatePickerDialogFragment
 import java.util.Calendar
 
 class SignUpEnterBirthFragment :
@@ -64,7 +64,7 @@ class SignUpEnterBirthFragment :
 
     private fun setCalendar(calendar: Calendar?) {
         binding.tvBtnSelectBirth.text = calendar?.let {
-            "${it.get(Calendar.YEAR)}년 ${it.get(Calendar.MONTH)}월 ${it.get(Calendar.DATE)}일"
+            "${it.get(Calendar.YEAR)}년 ${it.get(Calendar.MONTH) + 1}월 ${it.get(Calendar.DATE)}일"
         } ?: getString(R.string.sign_up_enter_birth_select_birth)
         signUpViewModelContentInterface.setNextButtonModel(
             signUpNextButtonModel = signUpNextButtonModel.copy(

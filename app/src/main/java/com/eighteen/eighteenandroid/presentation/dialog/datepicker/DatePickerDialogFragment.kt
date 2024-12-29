@@ -1,4 +1,4 @@
-package com.eighteen.eighteenandroid.presentation.dialog
+package com.eighteen.eighteenandroid.presentation.dialog.datepicker
 
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -11,7 +11,7 @@ import androidx.fragment.app.setFragmentResult
 import com.eighteen.eighteenandroid.databinding.DialogDatePickerBinding
 import com.eighteen.eighteenandroid.presentation.BaseBottomSheetDialogFragment
 import com.eighteen.eighteenandroid.presentation.common.getParcelableOrNull
-import java.util.Calendar
+import com.eighteen.eighteenandroid.presentation.dialog.datepicker.model.DatePickerDate
 
 
 class DatePickerDialogFragment :
@@ -33,9 +33,7 @@ class DatePickerDialogFragment :
                 val (year, month, day) = dpPicker.run {
                     Triple(year, month, dayOfMonth)
                 }
-                val bundle = bundleOf(DATE_RESULT_KEY to Calendar.getInstance().apply {
-                    set(year, month, day)
-                })
+                val bundle = bundleOf(DATE_RESULT_KEY to DatePickerDate(year, month, day))
                 val requestKey = arguments?.getString(ARGUMENT_REQUEST_KEY_KEY) ?: ""
                 setFragmentResult(requestKey, bundle)
                 dismiss()
@@ -57,11 +55,11 @@ class DatePickerDialogFragment :
 
     abstract class DatePickerResultListener : FragmentResultListener {
         final override fun onFragmentResult(requestKey: String, result: Bundle) {
-            result.getParcelableOrNull(DATE_RESULT_KEY, Calendar::class.java)?.let {
+            result.getParcelableOrNull(DATE_RESULT_KEY, DatePickerDate::class.java)?.let {
                 onConfirmResult(
-                    it.get(Calendar.YEAR),
-                    it.get(Calendar.MONTH) + 1,
-                    it.get(Calendar.DATE)
+                    it.year,
+                    it.month,
+                    it.day
                 )
             }
         }
