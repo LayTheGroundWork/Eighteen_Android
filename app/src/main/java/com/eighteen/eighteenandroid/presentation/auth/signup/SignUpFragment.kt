@@ -32,6 +32,7 @@ import com.eighteen.eighteenandroid.presentation.common.viewModelsByBackStackEnt
 import com.eighteen.eighteenandroid.presentation.dialog.ErrorDialogFragment
 import com.eighteen.eighteenandroid.presentation.editmedia.BaseEditMediaFragment.Companion.EDIT_MEDIA_POP_DESTINATION_ID_KEY
 import com.eighteen.eighteenandroid.presentation.editmedia.EditMediaViewModel
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -146,10 +147,16 @@ class SignUpFragment : BaseFragment<FragmentSignUpBinding>(FragmentSignUpBinding
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 onGranted.invoke()
                             } else {
-                                //TODO 권한요청 거부 시 작업(팝업 or 세팅 이동 등) 논의
                                 requestPermissions(
                                     Manifest.permission.READ_EXTERNAL_STORAGE,
-                                    onGranted = onGranted
+                                    onGranted = onGranted,
+                                    onDenied = {
+                                        Snackbar.make(
+                                            binding.root,
+                                            R.string.permission_denied,
+                                            Snackbar.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 )
                             }
                         }
