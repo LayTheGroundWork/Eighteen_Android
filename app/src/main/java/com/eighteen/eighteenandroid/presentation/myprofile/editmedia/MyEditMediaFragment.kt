@@ -32,6 +32,7 @@ import com.eighteen.eighteenandroid.presentation.editmedia.EditMediaViewModel
 import com.eighteen.eighteenandroid.presentation.editmedia.model.EditMediaResult
 import com.eighteen.eighteenandroid.presentation.myprofile.editmedia.model.MyEditMediaEvent
 import com.eighteen.eighteenandroid.presentation.myprofile.editmedia.model.MyEditMediaModel
+import com.google.android.material.snackbar.Snackbar
 
 class MyEditMediaFragment :
     BaseFragment<FragmentMyEditMediaBinding>(FragmentMyEditMediaBinding::inflate) {
@@ -184,10 +185,16 @@ class MyEditMediaFragment :
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         onGranted.invoke()
                     } else {
-                        //TODO 권한요청 거부 시 작업(팝업 or 세팅 이동 등) 논의
                         requestPermissions(
                             Manifest.permission.READ_EXTERNAL_STORAGE,
-                            onGranted = onGranted
+                            onGranted = onGranted,
+                            onDenied = {
+                                Snackbar.make(
+                                    binding.root,
+                                    R.string.permission_denied,
+                                    Snackbar.LENGTH_SHORT
+                                ).show()
+                            }
                         )
                     }
                 }
