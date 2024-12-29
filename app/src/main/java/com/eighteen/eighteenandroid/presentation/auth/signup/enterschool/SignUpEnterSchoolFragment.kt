@@ -124,7 +124,9 @@ class SignUpEnterSchoolFragment :
 
                 }
                 is ModelState.Error -> {
-                    //TODO 학교 검색 목록 에러 상태 처리
+                    (binding.rvSearchResult.adapter as? SchoolSearchResultAdapter)?.submitList(
+                        emptyList()
+                    )
                 }
                 is ModelState.Empty -> {
                     //do nothing
