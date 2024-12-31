@@ -1,6 +1,7 @@
 package com.eighteen.eighteenandroid.presentation.myprofile
 
 import android.util.Log
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -11,6 +12,7 @@ import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentMyProfileBinding
 import com.eighteen.eighteenandroid.presentation.BaseFragment
 import com.eighteen.eighteenandroid.presentation.MyViewModel
+import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
 import com.eighteen.eighteenandroid.presentation.myprofile.editlink.EditLinkDialogFragment
 import kotlinx.coroutines.launch
@@ -27,6 +29,9 @@ class MyProfileFragment :
         binding.rvProfile.run {
             adapter = MyProfileAdapter(clickListener = this@MyProfileFragment)
             itemAnimator = null
+            binding.inError.tvBtnRetry.setOnClickListener {
+                myViewModel.requestMyProfile()
+            }
             addItemDecoration(MyProfileItemDecoration())
         }
     }
@@ -35,9 +40,16 @@ class MyProfileFragment :
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 myViewModel.myProfileStateFlow.collect {
-                    if (it.isSuccess()) {
-                        it.data?.let { profile ->
-                            myProfileViewModel.setProfile(profile)
+                    binding.inLoading.root.isVisible = it is ModelState.Loading
+                    binding.inError.root.isVisible = it is ModelState.Error
+                    when (it) {
+                        is ModelState.Success -> {
+                            it.data?.let { profile ->
+                                myProfileViewModel.setProfile(profile)
+                            }
+                        }
+                        else -> {
+                            //do nothing
                         }
                     }
                 }

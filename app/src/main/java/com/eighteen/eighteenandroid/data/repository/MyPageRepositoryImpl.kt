@@ -17,7 +17,6 @@ import javax.inject.Inject
 class MyPageRepositoryImpl @Inject constructor(private val myPageService: MyPageService) :
     MyPageRepository {
     override suspend fun postMyPageUpdate(
-        accessToken: String,
         nickName: String?,
         school: School?,
         snsInfo: List<SnsInfo>,

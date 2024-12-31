@@ -2,7 +2,6 @@ package com.eighteen.eighteenandroid.presentation.profiledetail
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -15,19 +14,24 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.eighteen.eighteenandroid.R
+import com.eighteen.eighteenandroid.common.AppConfig
 import com.eighteen.eighteenandroid.databinding.FragmentProfileDetailBinding
 import com.eighteen.eighteenandroid.domain.usecase.GetUserDetailInfoUseCase
 import com.eighteen.eighteenandroid.presentation.BaseFragment
 import com.eighteen.eighteenandroid.presentation.common.ModelState
+import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
+import com.eighteen.eighteenandroid.presentation.common.media3.PlayerManager
 import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
 import com.eighteen.eighteenandroid.presentation.common.showReportSelectDialogBottom
+import com.eighteen.eighteenandroid.presentation.dialog.ReportDialogFragment
 import com.eighteen.eighteenandroid.presentation.mediadetail.MediaDetailDialogFragment
-import com.eighteen.eighteenandroid.presentation.mediadetail.MediaDetailViewModel
 import com.eighteen.eighteenandroid.presentation.mediadetail.model.MediaDetailMediaModel
 import com.eighteen.eighteenandroid.presentation.profiledetail.model.ProfileDetailModel
 import com.eighteen.eighteenandroid.presentation.profiledetail.viewholder.ProfileDetailViewHolder
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,8 +41,6 @@ class ProfileDetailFragment() :
 
     @Inject
     lateinit var getUserDetailInfoUseCase: GetUserDetailInfoUseCase
-
-    private val mediaDetailViewModel by viewModels<MediaDetailViewModel>()
 
     @Inject
     lateinit var assistedFactory: ProfileDetailViewModel.ProfileDetailAssistedFactory
@@ -52,16 +54,14 @@ class ProfileDetailFragment() :
         }
     )
 
-    private lateinit var mediaItems: List<ProfileDetailModel.MediaItem>
-
+    private var playerManager: PlayerManager? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initPlayerManager()
         setupAdapter()
         setupRecyclerViewScrollListener()
         initViewModel()
-        observeMediaItems()
-        initMediaDetailFlow()
-        initMediaDetailFlow()
+        initFragmentResultListener()
     }
 
     override fun initView() {
@@ -74,29 +74,25 @@ class ProfileDetailFragment() :
                         ivMore,
                         onReportClicked = {
                             // 신고 다이얼로그 보여주기
-                            // TODO. 유저 정보 필요
-//                            showDialogFragment(ReportDialogFragment.newInstance(user))
+                            profileDetailViewModel.profileInfo?.let {
+                                showDialogFragment(
+                                    ReportDialogFragment.newInstance(
+                                        userId = it.id,
+                                        userName = it.name
+                                    )
+                                )
+                            }
                         },
                         onBlockClicked = {}
                     )
                 }
-                clLike.setOnClickListener {
-                    profileDetailViewModel.toggleLike()
-                }
-                ivSound.setOnClickListener {
-                    mediaDetailViewModel.toggleVolume()
-                }
             }
-        }
-    }
-
-    private fun observeMediaItems() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                profileDetailViewModel.mediaItems.collectLatest { mediaItems ->
-                    val hasVideo = mediaItems.any { it.isVideo }
-                    Log.d("ProfileDetailFragment", "hasVideo : $hasVideo")
-                    binding.ivSound.isVisible = hasVideo
+            clLike.setOnClickListener {
+                profileDetailViewModel.toggleLike()
+            }
+            ivSound.setOnClickListener {
+                playerManager?.let {
+                    setVolume(it.isVolumeOn.not())
                 }
             }
         }
@@ -107,7 +103,9 @@ class ProfileDetailFragment() :
             object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
                     super.onPageSelected(position)
-                    val mediaItems = profileDetailViewModel.mediaItems.value
+                    val mediaItems =
+                        profileDetailViewModel.items.value.data?.filterIsInstance<ProfileDetailModel.ProfileImages>()
+                            ?.firstOrNull()?.mediaItems ?: return
                     if (mediaItems.isNotEmpty() && position < mediaItems.size) {
                         val mediaItem = mediaItems[position]
                         binding.ivSound.isVisible = mediaItem.isVideo
@@ -120,13 +118,28 @@ class ProfileDetailFragment() :
             profileDetailRecyclerview.layoutManager = LinearLayoutManager(requireContext())
             profileDetailRecyclerview.adapter =
                 ProfileDetailAdapter(
-                    viewLifecycleOwner,
                     onPageChangeCallbackForVisibilitySoundIcon,
                     onPageChangeCallbackForImagePosition = { currentPosition ->
                         profileDetailViewModel.setCurrentPosition(currentPosition)
                     }, onLikeChangeCallback = { profileDetailViewModel.toggleLike() },
                     onQnaToggleCallback = { profileDetailViewModel.toggleItems() },
-                    getCurrentPosition = { profileDetailViewModel.currentPosition }
+                    getCurrentPosition = { profileDetailViewModel.currentPosition },
+                    onClickMedia = { position, medias ->
+                        openMediaDetailDialogFragment(
+                            position = position,
+                            mediaModels = medias.map {
+                                if (it.isVideo) MediaDetailMediaModel.Video(
+                                    id = it.url ?: "",
+                                    mediaUrl = it.url
+                                )
+                                else MediaDetailMediaModel.Image(
+                                    id = it.url ?: "",
+                                    mediaUrl = it.url
+                                )
+                            }
+                        )
+                    },
+                    playerManager = playerManager
                 )
             profileDetailRecyclerview.itemAnimator = null
         }
@@ -147,7 +160,6 @@ class ProfileDetailFragment() :
                                     details.data
                                 )
                             }
-
                         }
 
                         is ModelState.Error -> {
@@ -172,12 +184,20 @@ class ProfileDetailFragment() :
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mediaDetailViewModel.mediaDetailStateFlow.collect {
-                    setVolume(isVolumeOn = it.isVolumeOn)
-                }
-            }
+        collectInLifecycle(
+            AppConfig.getSoundOptionFlow(requireContext())
+                .stateIn(viewLifecycleOwner.lifecycleScope, SharingStarted.WhileSubscribed(), false)
+        ) { isVolumeOn ->
+            val drawableRes =
+                if (isVolumeOn) R.drawable.ic_unmute else R.drawable.ic_mute
+            binding.ivSound.setImageResource(drawableRes)
+            playerManager?.setVolume(isVolumeOn = isVolumeOn)
+        }
+    }
+
+    private fun initPlayerManager() {
+        playerManager = context?.let {
+            PlayerManager(viewLifecycleOwner, it)
         }
     }
 
@@ -223,9 +243,10 @@ class ProfileDetailFragment() :
     }
 
     private fun setVolume(isVolumeOn: Boolean) {
-        val drawableRes =
-            if (isVolumeOn) R.drawable.ic_unmute else R.drawable.ic_mute
-        binding.ivSound.setImageResource(drawableRes)
+        val context = context ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            AppConfig.setSoundOption(context, isVolumeOn)
+        }
     }
 
     private fun initNavigation() {
@@ -236,36 +257,41 @@ class ProfileDetailFragment() :
         }
     }
 
-    //TODO pageChangeCallback position 업데이트 추가
-//TODO 샘플코드 제거 미디어 모델 flow형태로 변환 후 전달
-    private fun initMediaDetailFlow() = viewLifecycleOwner.lifecycleScope.launch {
-        val video1 =
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-        val video2 =
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-        val video3 =
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-        val image1 =
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
-        val image2 =
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg"
-        val image3 =
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg"
-        val testMedias = listOf(
-            MediaDetailMediaModel.Video("1", video1),
-            MediaDetailMediaModel.Video("2", video2),
-            MediaDetailMediaModel.Image("3", image1),
-            MediaDetailMediaModel.Video("4", video3),
-            MediaDetailMediaModel.Image("5", image2),
-            MediaDetailMediaModel.Image("6", image3),
-        )
-        mediaDetailViewModel.setMedias(medias = testMedias)
+    private fun initFragmentResultListener() {
+        childFragmentManager.setFragmentResultListener(
+            MEDIA_DETAIL_REQUEST_KEY,
+            viewLifecycleOwner,
+            object : MediaDetailDialogFragment.MediaDetailDialogResultListener() {
+                override fun onDismiss() {
+                    playerManager?.resume()
+                }
+            })
+    }
+
+    override fun onDestroyView() {
+        playerManager = null
+        super.onDestroyView()
     }
 
     /**
      * 프로필 상세에서 사진/영상 클릭 시 미디어 상세화면으로 이동
      */
-    private fun openMediaDetailDialogFragment() {
-        showDialogFragment(MediaDetailDialogFragment())
+    private fun openMediaDetailDialogFragment(
+        position: Int,
+        mediaModels: List<MediaDetailMediaModel>
+    ) {
+        showDialogFragment(
+            MediaDetailDialogFragment.newInstance(
+                requestKey = MEDIA_DETAIL_REQUEST_KEY,
+                startPosition = position,
+                mediaModels = mediaModels,
+                userName = profileDetailViewModel.profileInfo?.name,
+                userId = profileDetailViewModel.profileInfo?.id
+            )
+        )
+    }
+
+    companion object {
+        private const val MEDIA_DETAIL_REQUEST_KEY = "media_detail_request_key"
     }
 }

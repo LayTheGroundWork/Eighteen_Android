@@ -16,6 +16,7 @@ import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpMedia
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpMedias
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpPage
+import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpStatusEvent
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.livedata.Event
 import com.eighteen.eighteenandroid.presentation.editmedia.model.EditMediaResult
@@ -77,6 +78,10 @@ class SignUpViewModel @Inject constructor(
     override val mediasStateFlow: StateFlow<SignUpMedias> = _mediasStateFlow.asStateFlow()
 
     private var signUpJob: Job? = null
+
+    private val _statusEvent = MutableLiveData<Event<SignUpStatusEvent>>()
+    val statusEvent: LiveData<Event<SignUpStatusEvent>> = _statusEvent
+
     fun actionToPrevPage() {
         _actionEventLiveData.value = Event(SignUpAction.PREV)
     }
@@ -165,6 +170,10 @@ class SignUpViewModel @Inject constructor(
         viewModelScope.launch {
             _requestLoginEventLiveData.value = Event(authToken)
         }
+    }
+
+    override fun sendSignUpStatusEvent(event: SignUpStatusEvent) {
+        _statusEvent.value = Event(event)
     }
 
     override fun onCleared() {

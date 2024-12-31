@@ -32,7 +32,7 @@ sealed interface MyProfileItem {
             other is Link && this == other
     }
 
-    data class Introduce(val mbti: String?, val description: String?) : MyProfileItem {
+    data class Introduce(val mbti: String?, val introduction: String?) : MyProfileItem {
         override fun areItemsTheSame(other: MyProfileItem) =
             other is Introduce && this == other
 

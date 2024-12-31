@@ -20,13 +20,16 @@ import com.eighteen.eighteenandroid.presentation.FullWebViewFragment
 import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpEditMediaAction
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
+import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpStatusEvent
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.getParcelableOrNull
 import com.eighteen.eighteenandroid.presentation.common.hideKeyboardAndRemoveCurrentFocus
 import com.eighteen.eighteenandroid.presentation.common.livedata.EventObserver
 import com.eighteen.eighteenandroid.presentation.common.requestPermissions
+import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
 import com.eighteen.eighteenandroid.presentation.common.viewModelsByBackStackEntry
+import com.eighteen.eighteenandroid.presentation.dialog.ErrorDialogFragment
 import com.eighteen.eighteenandroid.presentation.editmedia.BaseEditMediaFragment.Companion.EDIT_MEDIA_POP_DESTINATION_ID_KEY
 import com.eighteen.eighteenandroid.presentation.editmedia.EditMediaViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -89,6 +92,7 @@ class SignUpFragment : BaseFragment<FragmentSignUpBinding>(FragmentSignUpBinding
         initActionEventObserver()
         initSignUpResultStateFlow()
         initLoginCompleteLiveEvent()
+        initStatusEvent()
     }
 
     private fun initSignUpObserver() = with(signUpViewModel) {
@@ -187,23 +191,29 @@ class SignUpFragment : BaseFragment<FragmentSignUpBinding>(FragmentSignUpBinding
     private fun initLoginCompleteLiveEvent() {
         signUpViewModel.requestLoginEventLiveData.observe(viewLifecycleOwner, EventObserver {
             myViewModel.completeLogin(authToken = it)
+            findNavController().popBackStack(R.id.fragmentLogin, true)
         })
-        collectInLifecycle(myViewModel.myProfileStateFlow){
-            when(it){
-                is ModelState.Loading->{
+    }
 
+    private fun initStatusEvent() {
+        signUpViewModel.statusEvent.observe(viewLifecycleOwner, EventObserver {
+            when (it) {
+                SignUpStatusEvent.LOADING -> {
+                    binding.inLoading.root.isVisible = true
                 }
-                is ModelState.Success->{
-                    findNavController().popBackStack(R.id.fragmentLogin, true)
+                SignUpStatusEvent.INVISIBLE -> {
+                    binding.inLoading.root.isVisible = false
                 }
-                is ModelState.Error->{
-
-                }
-                else ->{
-                    //do nothing
+                SignUpStatusEvent.ERROR_DIALOG -> {
+                    binding.inLoading.root.isVisible = false
+                    openErrorDialogFragment()
                 }
             }
-        }
+        })
+    }
+
+    private fun openErrorDialogFragment() {
+        showDialogFragment(ErrorDialogFragment())
     }
 
     companion object {

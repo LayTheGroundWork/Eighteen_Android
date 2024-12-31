@@ -9,11 +9,12 @@ import com.eighteen.eighteenandroid.presentation.ranking.model.RankingCategory
 
 class RankingViewHolder(
     private val binding: ItemRankingBinding,
-    private val onVoteCardClick: (CardListItem.VoteCard) -> Unit
+    private val onVoteCardClick: (CardListItem.VoteCard) -> Unit,
+    private val onWinnerCardClick: (CardListItem.WinnerCard) -> Unit
 ) :
     RecyclerView.ViewHolder(binding.root) {
 
-    private val cardListAdapter = CardListAdapter(onVoteCardClick)
+    private val cardListAdapter = CardListAdapter(onVoteCardClick, onWinnerCardClick)
 
     init {
         binding.rvRanking.apply {

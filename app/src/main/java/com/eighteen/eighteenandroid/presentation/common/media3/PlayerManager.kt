@@ -28,6 +28,8 @@ open class PlayerManager(
     val duration get() = player.duration
     val isPlaying get() = player.isPlaying
 
+    val isVolumeOn get() = player.volume > 0f
+
     init {
         initLifecycle()
     }
@@ -52,7 +54,8 @@ open class PlayerManager(
     @OptIn(UnstableApi::class)
     open fun play(mediaInfo: MediaInfo) {
         player.repeatMode = mediaInfo.repeatMode
-        if (mediaInfo.id == targetMediaInfo?.id && mediaInfo.resizeMode == targetMediaInfo?.resizeMode) {
+        if (mediaInfo == targetMediaInfo) {
+            player.prepare()
             player.play()
             return
         }
@@ -68,6 +71,10 @@ open class PlayerManager(
         player.play()
         mediaInfo.mediaView.playerView.resizeMode = mediaInfo.resizeMode
         mediaInfo.mediaView.setPlayer(player)
+    }
+
+    fun resume() {
+        player.play()
     }
 
     open fun pause() {

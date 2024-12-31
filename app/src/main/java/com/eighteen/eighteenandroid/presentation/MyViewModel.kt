@@ -47,11 +47,7 @@ class MyViewModel @Inject constructor(
     )
 
     init {
-        viewModelScope.launch {
-            getMyProfileUseCase.invoke().onSuccess {
-                _myProfileStateFlow.value = ModelState.Success(it)
-            }
-        }
+        requestMyProfile()
     }
 
     fun completeLogin(authToken: AuthToken) {
@@ -65,6 +61,19 @@ class MyViewModel @Inject constructor(
                 _myProfileStateFlow.value = ModelState.Error(throwable = it)
             }
         }
+    }
+
+    fun requestMyProfile() {
+        myProfileJob?.cancel()
+        myProfileJob = viewModelScope.launch {
+            _myProfileStateFlow.value = ModelState.Loading()
+            getMyProfileUseCase.invoke().onSuccess {
+                _myProfileStateFlow.value = ModelState.Success(it)
+            }.onFailure {
+                _myProfileStateFlow.value = ModelState.Error(throwable = it)
+            }
+        }
+
     }
 
     fun requestEditNickName(nickName: String?) {
@@ -97,6 +106,7 @@ class MyViewModel @Inject constructor(
     ) {
         if (editMyProfileJob?.isCompleted == false) return
         viewModelScope.launch {
+            _editProfileEventStateFlow.value = ModelState.Loading()
             myProfileStateFlow.value.data?.let { profile ->
                 val nickNameParam = nickName ?: profile.nickName
                 val schoolParam = school ?: profile.school
@@ -105,7 +115,6 @@ class MyViewModel @Inject constructor(
                 val introductionParam = introduction ?: profile.introduction
                 val questionsParam = questions ?: profile.qna
                 editMyProfileUseCase.invoke(
-                    accessToken = "",
                     nickName = nickNameParam,
                     school = schoolParam,
                     snsInfo = snsInfoParam,
@@ -113,7 +122,7 @@ class MyViewModel @Inject constructor(
                     introduction = introductionParam,
                     questions = questionsParam
                 ).onSuccess {
-                    _editProfileEventStateFlow.value = ModelState.Success()
+                    _editProfileEventStateFlow.value = ModelState.Success(Event(Unit))
                     if (_myProfileStateFlow.value.isSuccess()) {
                         _myProfileStateFlow.update {
                             ModelState.Success(
@@ -129,7 +138,8 @@ class MyViewModel @Inject constructor(
                         }
                     }
                 }.onFailure {
-                    _editProfileEventStateFlow.value = ModelState.Error(throwable = it)
+                    _editProfileEventStateFlow.value =
+                        ModelState.Error(data = Event(Unit), throwable = it)
                 }
             }
         }

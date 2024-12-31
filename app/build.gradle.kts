@@ -175,7 +175,7 @@ dependencies {
     val datastoreVersion = "1.1.1"
     implementation("androidx.datastore:datastore-preferences:$datastoreVersion")
 
-    // Lottie
-    val lottieVersion = "5.0.2"
+    //lottie
+    val lottieVersion = "5.2.0"
     implementation("com.airbnb.android:lottie:$lottieVersion")
 }

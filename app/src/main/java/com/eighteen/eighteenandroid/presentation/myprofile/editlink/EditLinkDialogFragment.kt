@@ -2,6 +2,7 @@ package com.eighteen.eighteenandroid.presentation.myprofile.editlink
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
@@ -15,6 +16,8 @@ import com.eighteen.eighteenandroid.presentation.BaseDialogFragment
 import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
+import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
+import com.eighteen.eighteenandroid.presentation.dialog.ErrorDialogFragment
 import com.eighteen.eighteenandroid.presentation.myprofile.editlink.model.EditLinkModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -100,17 +103,18 @@ class EditLinkDialogFragment :
             binding.ivBtnCheck.setImageDrawable(targetDrawable)
         }
         collectInLifecycle(myViewModel.editProfileEventStateFlow) {
+            binding.inLoading.root.visibility =
+                if (it is ModelState.Loading) View.VISIBLE else View.INVISIBLE
             when (it) {
-                is ModelState.Loading -> {
-                    //TODO 로딩처리
-                }
                 is ModelState.Success -> {
                     it.data?.getContentIfNotHandled()?.let {
                         dismissNow()
                     }
                 }
                 is ModelState.Error -> {
-                    //TODO 에러처리
+                    it.data?.getContentIfNotHandled()?.let {
+                        showDialogFragment(ErrorDialogFragment())
+                    }
                 }
                 else -> {
                     //do nothing

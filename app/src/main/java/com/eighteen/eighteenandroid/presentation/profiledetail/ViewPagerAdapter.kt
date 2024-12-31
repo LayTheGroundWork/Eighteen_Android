@@ -17,6 +17,7 @@ import com.eighteen.eighteenandroid.presentation.profiledetail.model.ProfileDeta
 
 class ViewPagerAdapter(
     private val items: List<ProfileDetailModel.MediaItem>,
+    private val onClickItem: (Int) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutId =
@@ -46,17 +47,23 @@ class ViewPagerAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
-        if (holder is ImageViewHolder) holder.bind(item) else if (holder is VideoViewHolder) holder.bind(
-            item
-        )
+        if (holder is ImageViewHolder) holder.bind(
+            mediaItem = item,
+            onClick = { onClickItem(position) })
+        else if (holder is VideoViewHolder) holder.bind(
+            mediaItem = item,
+            onClick = { onClickItem(position) })
     }
 
     class ImageViewHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.ImageView)
 
-        fun bind(mediaItem: ProfileDetailModel.MediaItem) {
+        fun bind(mediaItem: ProfileDetailModel.MediaItem, onClick: () -> Unit) {
             ImageLoader.get().loadUrl(imageView, mediaItem.url)
+            itemView.setOnClickListener {
+                onClick()
+            }
         }
     }
 
@@ -65,9 +72,15 @@ class ViewPagerAdapter(
         private val mediaView: MediaView = itemView.findViewById(R.id.media_view)
         private var mediaItem: ProfileDetailModel.MediaItem? = null
 
-        fun bind(mediaItem: ProfileDetailModel.MediaItem) {
+        fun bind(mediaItem: ProfileDetailModel.MediaItem, onClick: () -> Unit) {
             this.mediaItem = mediaItem
             mediaView.setThumbnailUrl(mediaItem.url)
+            itemView.findViewById<View>(R.id.vTouchArea).apply {
+                setOnClickListener {
+                    onClick()
+                }
+                bringToFront()
+            }
         }
 
         @OptIn(UnstableApi::class)

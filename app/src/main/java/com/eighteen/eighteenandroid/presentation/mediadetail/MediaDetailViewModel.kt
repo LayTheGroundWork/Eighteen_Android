@@ -1,23 +1,16 @@
 package com.eighteen.eighteenandroid.presentation.mediadetail
 
 import androidx.lifecycle.ViewModel
-import com.eighteen.eighteenandroid.presentation.mediadetail.model.MediaDetailMediaModel
-import com.eighteen.eighteenandroid.presentation.mediadetail.model.MediaDetailModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import androidx.lifecycle.ViewModelProvider
 
-class MediaDetailViewModel : ViewModel() {
-    var selectedIndex: Int = 0
-    private val _mediaDetailStateFlow = MutableStateFlow(MediaDetailModel())
-    val mediaDetailStateFlow = _mediaDetailStateFlow.asStateFlow()
+class MediaDetailViewModel(startPosition: Int = 0) : ViewModel() {
+    var selectedIndex: Int = startPosition
 
-    fun setMedias(medias: List<MediaDetailMediaModel>) {
-        _mediaDetailStateFlow.value = mediaDetailStateFlow.value.copy(medias = medias)
-    }
 
-    fun toggleVolume() {
-        _mediaDetailStateFlow.value = mediaDetailStateFlow.value.run {
-            copy(isVolumeOn = !isVolumeOn)
+    class Factory(private val startPosition: Int) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return MediaDetailViewModel(startPosition) as T
         }
     }
 }

@@ -126,4 +126,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:text="건너뛰기" />
+
+    <include
+        android:id="@+id/inLoading"
+        layout="@layout/layout_loading_dimmed"
+        android:visibility="gone" />
 </androidx.constraintlayout.widget.ConstraintLayout>

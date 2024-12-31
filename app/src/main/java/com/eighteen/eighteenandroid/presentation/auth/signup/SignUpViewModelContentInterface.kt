@@ -7,6 +7,7 @@ import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpEditMed
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpMedias
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpPage
+import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpStatusEvent
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.livedata.Event
 import kotlinx.coroutines.flow.StateFlow
@@ -34,4 +35,5 @@ interface SignUpViewModelContentInterface {
     fun removeMedia(position: Int)
     fun setMainMedia(position: Int)
     fun requestLogin(authToken: AuthToken)
+    fun sendSignUpStatusEvent(event: SignUpStatusEvent)
 }

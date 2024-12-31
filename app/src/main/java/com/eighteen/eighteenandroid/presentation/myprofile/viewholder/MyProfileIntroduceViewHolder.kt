@@ -18,7 +18,7 @@ class MyProfileIntroduceViewHolder(
             tvMbti.text = model.mbti
             tvMbti.isVisible = model.mbti != null
             tvDescription.text =
-                model.description?.takeIf { it.isNotEmpty() }
+                model.introduction?.takeIf { it.isNotEmpty() }
                     ?: context.getString(R.string.my_profile_introduce_empty)
         }
     }

@@ -10,8 +10,10 @@ import com.eighteen.eighteenandroid.databinding.ItemRankingWinnerBinding
 import com.eighteen.eighteenandroid.presentation.ranking.cardList.model.CardListItem
 import com.eighteen.eighteenandroid.presentation.ranking.cardList.viewholder.CardListViewHolder
 
-class CardListAdapter(private val onVoteCardClick: (CardListItem.VoteCard) -> Unit) :
-    ListAdapter<CardListItem, CardListViewHolder>(diffUtil) {
+class CardListAdapter(
+    private val onVoteCardClick: (CardListItem.VoteCard) -> Unit,
+    private val onWinnerCardClick: (CardListItem.WinnerCard) -> Unit
+) : ListAdapter<CardListItem, CardListViewHolder>(diffUtil) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardListViewHolder {
         val context = parent.context
         val inflate = LayoutInflater.from(context)
@@ -31,7 +33,12 @@ class CardListAdapter(private val onVoteCardClick: (CardListItem.VoteCard) -> Un
 
             ITEM_TYPE_WINNER -> {
                 val binding = inflaterBinding(ItemRankingWinnerBinding::inflate)
-                CardListViewHolder.Winner(binding)
+                CardListViewHolder.Winner(binding).apply {
+                    binding.root.setOnClickListener {
+                        val winnerCard = getItem(adapterPosition) as? CardListItem.WinnerCard
+                        winnerCard?.let { onWinnerCardClick(it) }
+                    }
+                }
             }
 
             else -> throw IllegalArgumentException("Invalid view type")

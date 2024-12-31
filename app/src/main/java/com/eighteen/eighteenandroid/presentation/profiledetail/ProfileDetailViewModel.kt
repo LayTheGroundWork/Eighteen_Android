@@ -24,15 +24,15 @@ class ProfileDetailViewModel @AssistedInject constructor(
     private val _items = MutableStateFlow<ModelState<List<ProfileDetailModel>>>(ModelState.Empty())
     val items get() = _items.asStateFlow()
 
+    val profileInfo
+        get() = items.value.data?.filterIsInstance<ProfileDetailModel.ProfileInfo>()?.firstOrNull()
+
     private var showAllItems = false
 
     private var qnaItems = emptyList<ProfileDetailModel.Qna>()
 
     private var _currentPosition = 0
     val currentPosition: Int get() = _currentPosition
-
-    private val _mediaItems = MutableStateFlow<List<ProfileDetailModel.MediaItem>>(emptyList())
-    val mediaItems: StateFlow<List<ProfileDetailModel.MediaItem>> get() = _mediaItems
 
     private val _isLike = MutableStateFlow(false)
     val isLike: StateFlow<Boolean> get() = _isLike
@@ -104,10 +104,6 @@ class ProfileDetailViewModel @AssistedInject constructor(
             ),
             ProfileDetailModel.QnaListTitle(id = "qna_list_title"),
         ) + qnaList
-    }
-
-    fun setMediaItems(mediaItems: List<ProfileDetailModel.MediaItem>) {
-        _mediaItems.value = mediaItems
     }
 
     fun setCurrentPosition(position: Int) {

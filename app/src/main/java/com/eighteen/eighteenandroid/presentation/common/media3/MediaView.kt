@@ -1,6 +1,7 @@
 package com.eighteen.eighteenandroid.presentation.common.media3
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
@@ -30,9 +31,8 @@ class MediaView @JvmOverloads constructor(
         addView(binding.root)
         val bufferingProgressBar =
             binding.pvMedia.findViewById<ProgressBar>(androidx.media3.ui.R.id.exo_buffering)
-        //TODO 버퍼링 progressbar 추가
-        bufferingProgressBar.indeterminateDrawable =
-            ContextCompat.getDrawable(context, R.drawable.ic_launcher_background)
+        val color = ContextCompat.getColor(context, R.color.white)
+        bufferingProgressBar.indeterminateTintList = ColorStateList.valueOf(color)
     }
 
     fun setPlayer(player: Player?) {

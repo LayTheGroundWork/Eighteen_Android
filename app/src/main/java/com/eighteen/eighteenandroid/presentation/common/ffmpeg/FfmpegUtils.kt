@@ -18,18 +18,20 @@ object FfmpegUtils {
     ) {
         val startTimeStr = getHourMinSecString(startTimeSec)
         val endTimeStr = getHourMinSecString(endTimeSec)
-        val session =
-            FFmpegKit.execute("-ss $startTimeStr -to $endTimeStr -i $mediaUriString $resultMediaUriString")
-        if (ReturnCode.isSuccess(session.returnCode)) {
-            onSuccess.invoke()
-        } else if (ReturnCode.isCancel(session.returnCode)) {
-            onCancel.invoke()
-        } else {
-            Log.d(
-                "FfmpegUtils",
-                session.run { "Command failed with state $state and rc $returnCode.$failStackTrace" },
-            )
-            onFailure.invoke()
+        FFmpegKit.executeAsync(
+            "-ss $startTimeStr -to $endTimeStr -i $mediaUriString $resultMediaUriString"
+        ) {
+            if (ReturnCode.isSuccess(it.returnCode)) {
+                onSuccess.invoke()
+            } else if (ReturnCode.isCancel(it.returnCode)) {
+                onCancel.invoke()
+            } else {
+                Log.d(
+                    "FfmpegUtils",
+                    it.run { "Command failed with state $state and rc $returnCode.$failStackTrace" },
+                )
+                onFailure.invoke()
+            }
         }
     }
 

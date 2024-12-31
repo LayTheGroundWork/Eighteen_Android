@@ -146,7 +146,11 @@
         android:id="@+id/fragmentRanking"
         android:name="com.eighteen.eighteenandroid.presentation.ranking.RankingFragment"
         android:label="fragment_ranking"
-        tools:layout="@layout/fragment_ranking" />
+        tools:layout="@layout/fragment_ranking" >
+        <action
+            android:id="@+id/action_fragmentRanking_to_fragmentRankingResult"
+            app:destination="@id/fragmentRankingResult" />
+    </fragment>
     <fragment
         android:id="@+id/fragmentVoting"
         android:name="com.eighteen.eighteenandroid.presentation.ranking.voting.VotingFragment"
@@ -181,4 +185,10 @@
         android:name="com.eighteen.eighteenandroid.presentation.badgedetail.BadgeDetailFragment"
         android:label="fragment_badge_detail"
         tools:layout="@layout/fragment_badge_detail" />
+
+    <fragment
+        android:id="@+id/fragmentRankingResult"
+        android:name="com.eighteen.eighteenandroid.presentation.ranking.RankingResultFragment"
+        android:label="RankingResultFragment"
+        tools:layout="@layout/fragment_ranking_result" />
 </navigation>

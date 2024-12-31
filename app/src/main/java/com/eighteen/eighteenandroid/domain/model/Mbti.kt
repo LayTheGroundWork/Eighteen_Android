@@ -94,7 +94,9 @@ fun createMbtiOrNull(mbtiTypeList: List<Mbti.MbtiType>): Mbti? {
 
 fun createMbtiOrNull(mbtiString: String): Mbti? {
     if (mbtiString.length != 4) return null
-    val mbtiTypeList = mbtiString.mapNotNull { Mbti.mbtiTypes.find { type -> type.alp == it } }
+    val mbtiTypeList =
+        mbtiString.mapNotNull { Mbti.mbtiTypes.find { type -> type.alp.equals(it, true) } }
+    if (mbtiTypeList.size != 4) return null
     if (mbtiTypeList[0] !is Mbti.MbtiType.Energy) return null
     if (mbtiTypeList[1] !is Mbti.MbtiType.Information) return null
     if (mbtiTypeList[2] !is Mbti.MbtiType.Decision) return null

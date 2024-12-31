@@ -1,21 +1,23 @@
 package com.eighteen.eighteenandroid.presentation.common.searchschool.viewholder
 
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.eighteen.eighteenandroid.databinding.ItemSchoolSearchResultBinding
 import com.eighteen.eighteenandroid.domain.model.School
+import com.eighteen.eighteenandroid.presentation.common.searchschool.model.SchoolSearchModel
 
 class SchoolSearchResultViewHolder(
     private val binding: ItemSchoolSearchResultBinding,
     private val onClickSchool: (School) -> Unit
-) : ViewHolder(binding.root) {
+) : SchoolSearchViewHolder(binding.root) {
 
-    fun onBind(schoolModel: School) {
-        with(binding) {
-            root.setOnClickListener {
-                onClickSchool.invoke(schoolModel)
+    override fun onBind(model: SchoolSearchModel) {
+        (model as? SchoolSearchModel.SchoolModel)?.school?.let { school ->
+            with(binding) {
+                root.setOnClickListener {
+                    onClickSchool.invoke(school)
+                }
+                tvSchoolName.text = school.name
+                tvAddress.text = school.address
             }
-            tvSchoolName.text = schoolModel.name
-            tvAddress.text = schoolModel.address
         }
     }
 }

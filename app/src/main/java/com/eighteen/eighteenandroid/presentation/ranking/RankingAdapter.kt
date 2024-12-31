@@ -10,7 +10,10 @@ import com.eighteen.eighteenandroid.presentation.ranking.cardList.model.CardList
 import com.eighteen.eighteenandroid.presentation.ranking.model.RankingCategory
 import com.eighteen.eighteenandroid.presentation.ranking.viewholder.RankingViewHolder
 
-class RankingAdapter( private val onVoteCardClick: (CardListItem.VoteCard) -> Unit) : ListAdapter<RankingCategory, RankingViewHolder>(diffUtil) {
+class RankingAdapter(
+    private val onVoteCardClick: (CardListItem.VoteCard) -> Unit,
+    private val onWinnerCardClick: (CardListItem.WinnerCard) -> Unit
+    ) : ListAdapter<RankingCategory, RankingViewHolder>(diffUtil) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RankingViewHolder {
         val context = parent.context
@@ -19,7 +22,7 @@ class RankingAdapter( private val onVoteCardClick: (CardListItem.VoteCard) -> Un
             bindingInflate.invoke(inflater, parent, false)
 
         val binding = inflateBinding(ItemRankingBinding::inflate)
-        return RankingViewHolder(binding, onVoteCardClick)
+        return RankingViewHolder(binding, onVoteCardClick, onWinnerCardClick)
     }
 
 

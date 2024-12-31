@@ -5,6 +5,7 @@ import com.eighteen.eighteenandroid.data.datasource.remote.service.MessageServic
 import com.eighteen.eighteenandroid.data.datasource.remote.service.MyPageService
 import com.eighteen.eighteenandroid.data.datasource.remote.service.SchoolService
 import com.eighteen.eighteenandroid.data.datasource.remote.service.TokenReissueService
+import com.eighteen.eighteenandroid.data.datasource.remote.service.TournamentService
 import com.eighteen.eighteenandroid.data.datasource.remote.service.UserService
 import com.eighteen.eighteenandroid.data.di.ApiModule
 import dagger.Module
@@ -46,4 +47,9 @@ object ServiceModule {
     @Provides
     fun provideTokenReissueService(@ApiModule.QualifierTokenReissueRetrofit retrofit: Retrofit): TokenReissueService =
         retrofit.create(TokenReissueService::class.java)
+
+    @Singleton
+    @Provides
+    fun provideTournamentService(@ApiModule.QualifierRetrofit retrofit: Retrofit): TournamentService =
+        retrofit.create(TournamentService::class.java)
 }

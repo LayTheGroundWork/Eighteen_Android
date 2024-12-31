@@ -116,4 +116,9 @@
             app:layout_constraintTop_toTopOf="@id/tvTimeStart"
             tools:text="00:10" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <include
+        android:id="@+id/inLoading"
+        layout="@layout/layout_loading_dimmed"
+        android:visibility="gone" />
 </androidx.constraintlayout.widget.ConstraintLayout>

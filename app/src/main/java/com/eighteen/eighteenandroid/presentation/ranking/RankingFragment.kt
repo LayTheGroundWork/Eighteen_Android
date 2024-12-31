@@ -1,6 +1,7 @@
 package com.eighteen.eighteenandroid.presentation.ranking
 
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.common.enums.Tag
@@ -9,6 +10,8 @@ import com.eighteen.eighteenandroid.presentation.BaseFragment
 import com.eighteen.eighteenandroid.presentation.common.createChip
 import com.eighteen.eighteenandroid.presentation.common.setTagStyle
 import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
+import com.eighteen.eighteenandroid.presentation.ranking.RankingResultFragment.Companion.ARGUMENT_KEY_CATEGORY
+import com.eighteen.eighteenandroid.presentation.ranking.RankingResultFragment.Companion.ARGUMENT_KEY_TOURNAMENT_NO
 import com.eighteen.eighteenandroid.presentation.ranking.cardList.model.CardListItem
 import com.eighteen.eighteenandroid.presentation.ranking.model.RankingCategory
 import com.google.android.material.chip.Chip
@@ -20,19 +23,29 @@ class RankingFragment : BaseFragment<FragmentRankingBinding>(FragmentRankingBind
     override fun initView() {
 //        val adapter = RankingAdapter()
 
-        val adapter = RankingAdapter { voteCard ->
-            val category = categories.find { category ->
-                category.cardListItems.any { it.id == voteCard.id }
-            }
-            categoryTitle = category?.categoryTitle ?: "기본 카테고리"
+        val adapter = RankingAdapter(
+            onVoteCardClick = { voteCard ->
+                val category = categories.find { category ->
+                    category.cardListItems.any { it.id == voteCard.id }
+                }
+                categoryTitle = category?.categoryTitle ?: "기본 카테고리"
 
-            val votingDialog = RankingVotingDialogFragment.newInstance(
-                requestKey = REQUEST_KEY_VOTING_ROOM_ENTER,
-                id = voteCard.id,
-                categoryTitle = categoryTitle?: "기본 카테고리"
-            )
-            showDialogFragment(votingDialog)
-        }
+                val votingDialog = RankingVotingDialogFragment.newInstance(
+                    requestKey = REQUEST_KEY_VOTING_ROOM_ENTER,
+                    id = voteCard.id,
+                    categoryTitle = categoryTitle ?: "기본 카테고리"
+                )
+                showDialogFragment(votingDialog)
+            },
+            onWinnerCardClick = { winnerCard ->
+                findNavController().navigate(R.id.action_fragmentRanking_to_fragmentRankingResult,
+                    bundleOf(
+                        ARGUMENT_KEY_TOURNAMENT_NO to winnerCard.tournamentNumb,    // 토너먼트 번호
+                        ARGUMENT_KEY_CATEGORY to winnerCard.category                // 카테고리 이름
+                    )
+                )
+            }
+        )
         initChipGroup()
 
 
@@ -44,36 +57,37 @@ class RankingFragment : BaseFragment<FragmentRankingBinding>(FragmentRankingBind
 
         categories = (0..9).map { index ->
             val titleIndex = index % categoryList.size
+            val title = categoryList[titleIndex]
             RankingCategory.Category(
                 id = index.toString(),
-                categoryTitle = categoryList[titleIndex],
+                categoryTitle = title,
                 cardListItems = listOf(
                     CardListItem.VoteCard(
                         id = "vote_$index",
-                        category = "카테고리 $index",
+                        category = title,
                         illustrationUrl = "https://png.pngtree.com/thumb_back/fw800/back_our/20190625/ourmid/pngtree-beautiful-nice-sky-blue-background-image_260273.jpg"
                     ),
                     CardListItem.WinnerCard(
                         id = "winner_${index}_1",
-                        category = "카테고리 $index",
+                        category = title,
                         imageUrl = "https://cdn.seoulwire.com/news/photo/202109/450631_649892_1740.jpg",
                         tournamentNumb = 1
                     ),
                     CardListItem.WinnerCard(
                         id = "winner_${index}_2",
-                        category = "카테고리 $index",
+                        category = title,
                         imageUrl = "https://cdn.seoulwire.com/news/photo/202109/450631_649892_1740.jpg",
                         tournamentNumb = 2
                     ),
                     CardListItem.WinnerCard(
                         id = "winner_${index}_3",
-                        category = "카테고리 $index",
+                        category = title,
                         imageUrl = "https://cdn.seoulwire.com/news/photo/202109/450631_649892_1740.jpg",
                         tournamentNumb = 3
                     ),
                     CardListItem.WinnerCard(
                         id = "winner_${index}_4",
-                        category = "카테고리 $index",
+                        category = title,
                         imageUrl = "https://cdn.seoulwire.com/news/photo/202109/450631_649892_1740.jpg",
                         tournamentNumb = 4
                     )

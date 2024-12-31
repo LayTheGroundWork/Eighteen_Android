@@ -16,6 +16,7 @@ import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
 import com.eighteen.eighteenandroid.presentation.common.viewModelsByBackStackEntry
+import com.eighteen.eighteenandroid.presentation.dialog.ErrorDialogFragment
 import com.eighteen.eighteenandroid.presentation.dialog.selectqna.SelectQnaDialogFragment
 import com.eighteen.eighteenandroid.presentation.dialog.selectqna.model.SelectQnaDialogModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -83,19 +84,19 @@ class EditTenOfQnaFragment :
             }
         }
         collectInLifecycle(myViewModel.editProfileEventStateFlow) {
+            binding.inLoading.root.isVisible = it is ModelState.Loading
             when (it) {
-                is ModelState.Loading -> {
-                    //TODO 로딩
-                }
                 is ModelState.Success -> {
                     it.data?.getContentIfNotHandled()?.let {
                         findNavController().popBackStack()
                     }
                 }
                 is ModelState.Error -> {
-                    //TODO 에러
+                    it.data?.getContentIfNotHandled()?.let {
+                        showDialogFragment(ErrorDialogFragment())
+                    }
                 }
-                is ModelState.Empty -> {
+                else -> {
                     //do nothing
                 }
             }

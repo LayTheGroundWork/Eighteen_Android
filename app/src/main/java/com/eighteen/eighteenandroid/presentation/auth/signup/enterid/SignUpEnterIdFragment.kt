@@ -10,6 +10,7 @@ import com.eighteen.eighteenandroid.presentation.auth.signup.BaseSignUpContentFr
 import com.eighteen.eighteenandroid.presentation.auth.signup.enterid.model.SignUpEnterIdStatus
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpPage
+import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpStatusEvent
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import dagger.hilt.android.AndroidEntryPoint
@@ -70,9 +71,10 @@ class SignUpEnterIdFragment :
         collectInLifecycle(signUpEnterIdViewModel.checkIdValidationEventStateFlow) {
             when (it) {
                 is ModelState.Loading -> {
-                    //TODO 로딩
+                    signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.LOADING)
                 }
                 is ModelState.Success -> {
+                    signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.INVISIBLE)
                     it.data?.getContentIfNotHandled()?.let { isDuplicated ->
                         if (isDuplicated) {
                             signUpEnterIdViewModel.setStatusDuplicated()
@@ -84,7 +86,7 @@ class SignUpEnterIdFragment :
                     }
                 }
                 is ModelState.Error -> {
-                    //TODO 에러처리
+                    signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.ERROR_DIALOG)
                 }
                 is ModelState.Empty -> {
                     //do nothing

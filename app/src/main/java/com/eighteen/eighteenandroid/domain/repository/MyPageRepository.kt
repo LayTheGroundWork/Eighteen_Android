@@ -8,7 +8,6 @@ import com.eighteen.eighteenandroid.domain.model.SnsInfo
 
 interface MyPageRepository {
     suspend fun postMyPageUpdate(
-        accessToken: String,
         nickName: String?,
         school: School?,
         snsInfo: List<SnsInfo>,

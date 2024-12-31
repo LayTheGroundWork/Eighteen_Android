@@ -9,6 +9,7 @@ import com.eighteen.eighteenandroid.databinding.FragmentSignUpEnterPhoneNumberBi
 import com.eighteen.eighteenandroid.presentation.auth.signup.BaseSignUpContentFragment
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpPage
+import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpStatusEvent
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.clearFocus
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
@@ -58,14 +59,15 @@ class SignUpEnterPhoneNumberFragment :
         collectInLifecycle(signUpEnterPhoneNumberViewModel.sendMessageResultStateFlow) {
             when (it) {
                 is ModelState.Loading -> {
-                    //TODO 로딩 처리
+                    signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.LOADING)
                 }
                 is ModelState.Success -> {
+                    signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.INVISIBLE)
                     signUpViewModelContentInterface.phoneNumber = it.data ?: ""
                     onMoveNextPageAction.invoke()
                 }
                 is ModelState.Error -> {
-                    //TODO 에러처리
+                    signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.ERROR_DIALOG)
                 }
                 is ModelState.Empty -> {
                     //do nothing

@@ -3,7 +3,6 @@ package com.eighteen.eighteenandroid.presentation.auth.signup.enterauthcode
 import android.annotation.SuppressLint
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.inputmethod.EditorInfo
@@ -18,6 +17,7 @@ import com.eighteen.eighteenandroid.presentation.auth.signup.LoginType
 import com.eighteen.eighteenandroid.presentation.auth.signup.enterauthcode.model.ConfirmResultModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpPage
+import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpStatusEvent
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.clearFocus
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
@@ -171,31 +171,19 @@ class SignUpEnterAuthCodeFragment :
     private fun initStateFlow() {
         collectInLifecycle(signUpEnterAuthCodeViewModel.sendMessageResultStateFlow) {
             when (it) {
-                is ModelState.Loading -> {
-                    //TODO 로딩 처리
-                    Log.d("SignUpEnterAuthCodeFragment", "send loading")
-                }
-                is ModelState.Success -> {
-                    //do nothing
-                }
-                is ModelState.Error -> {
-                    //TODO 에러처리
-                    Log.d("SignUpEnterAuthCodeFragment", "send error ${it.throwable}")
-
-                }
-                is ModelState.Empty -> {
-                    //do nothing
-                }
+                is ModelState.Loading -> signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.LOADING)
+                is ModelState.Error -> signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.ERROR_DIALOG)
+                else -> signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.INVISIBLE)
             }
         }
 
         collectInLifecycle(signUpEnterAuthCodeViewModel.confirmMessageResultStateFlow) {
             when (it) {
                 is ModelState.Loading -> {
-                    //TODO 로딩 처리
-                    Log.d("SignUpEnterAuthCodeFragment", "confirm loading")
+                    signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.LOADING)
                 }
                 is ModelState.Success -> {
+                    signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.INVISIBLE)
                     if (loginType == LoginType.SIGNUP) {
                         val data = it.data
                         if (data is ConfirmResultModel.LoginSuccess) showLoginDialogFragment()
@@ -210,8 +198,7 @@ class SignUpEnterAuthCodeFragment :
                     }
                 }
                 is ModelState.Error -> {
-                    //TODO 에러처리
-                    Log.d("SignUpEnterAuthCodeFragment", "confirm error ${it.throwable}")
+                    signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.ERROR_DIALOG)
                 }
                 is ModelState.Empty -> {
                     //do nothing

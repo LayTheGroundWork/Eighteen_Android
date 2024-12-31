@@ -35,7 +35,7 @@ class MyProfileViewModel : ViewModel() {
             )
             val linkItem = MyProfileItem.Link(snsInfoList = snsInfoList)
             val introduceItem =
-                MyProfileItem.Introduce(mbti = mbti?.mbtiString, description = description)
+                MyProfileItem.Introduce(mbti = mbti?.mbtiString, introduction = introduction)
             val qnaItem = MyProfileItem.TenOfQna(qnas = qna)
             return listOf(profileItem, linkItem, introduceItem, qnaItem)
         }

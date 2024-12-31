@@ -37,8 +37,8 @@ class PopUpDialogFragment :
                         val result =
                             bundleOf(RESULT_CONFIRM_KEY to true)
                         setFragmentResult(requestKey = it, result = result)
-                        dismissNow()
                     }
+                    dismissNow()
                 }
             }
         }

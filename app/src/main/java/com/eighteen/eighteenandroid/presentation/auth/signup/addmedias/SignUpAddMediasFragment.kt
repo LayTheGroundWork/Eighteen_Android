@@ -3,7 +3,6 @@ package com.eighteen.eighteenandroid.presentation.auth.signup.addmedias
 import android.net.Uri
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import com.eighteen.eighteenandroid.R
@@ -17,6 +16,7 @@ import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpMedia
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpMedias
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpNextButtonModel
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpPage
+import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpStatusEvent
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.getMimeTypeFromUri
@@ -124,18 +124,9 @@ class SignUpAddMediasFragment :
         }
         collectInLifecycle(signUpViewModelContentInterface.signUpResultStateFlow) {
             when (it) {
-                is ModelState.Loading -> {
-                    Log.d("SignUpCompletedFragment", "loading")
-                    //TODO 로딩 처리
-                }
-                is ModelState.Error -> {
-                    Log.d("SignUpCompletedFragment", "error $it")
-                    //TODO 에러처리
-                }
-                else -> {
-                    Log.d("SignUpCompletedFragment", "Empty or Success")
-                    //TODO 로딩, 에러 뷰 invisible
-                }
+                is ModelState.Loading -> signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.LOADING)
+                is ModelState.Error -> signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.ERROR_DIALOG)
+                else -> signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.INVISIBLE)
             }
         }
     }
