@@ -37,6 +37,10 @@ object ApiModule {
     @Retention(AnnotationRetention.BINARY)
     annotation class QualifierTokenReissueRetrofit
 
+    @Qualifier
+    @Retention(AnnotationRetention.BINARY)
+    annotation class QualifierS3Retrofit
+
     @Singleton
     @Provides
     @QualifierRetrofit
@@ -70,6 +74,18 @@ object ApiModule {
             .addConverterFactory(MoshiConverterFactory.create(moshi)).client(
                 okHttpClient
             ).build()
+    }
+
+    @Singleton
+    @Provides
+    @QualifierS3Retrofit
+    fun provideS3Retrofit(): Retrofit {
+        val okHttpClient = OkHttpClient.Builder().addInterceptor { chain ->
+            val request = chain.request().newBuilder()
+            chain.proceed(request.build())
+        }.addNetworkInterceptor(loggingInterceptor).build()
+        return Retrofit.Builder().addConverterFactory(MoshiConverterFactory.create(moshi))
+            .client(okHttpClient).build()
     }
 
 
