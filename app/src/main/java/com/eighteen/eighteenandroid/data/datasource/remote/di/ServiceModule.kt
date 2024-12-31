@@ -1,6 +1,7 @@
 package com.eighteen.eighteenandroid.data.datasource.remote.di
 
 import com.eighteen.eighteenandroid.data.datasource.remote.service.ChatService
+import com.eighteen.eighteenandroid.data.datasource.remote.service.MediaFileService
 import com.eighteen.eighteenandroid.data.datasource.remote.service.MessageService
 import com.eighteen.eighteenandroid.data.datasource.remote.service.MyPageService
 import com.eighteen.eighteenandroid.data.datasource.remote.service.SchoolService
@@ -46,4 +47,9 @@ object ServiceModule {
     @Provides
     fun provideTokenReissueService(@ApiModule.QualifierTokenReissueRetrofit retrofit: Retrofit): TokenReissueService =
         retrofit.create(TokenReissueService::class.java)
+
+    @Singleton
+    @Provides
+    fun provideMediaFileService(@ApiModule.QualifierRetrofit retrofit: Retrofit): MediaFileService =
+        retrofit.create(MediaFileService::class.java)
 }
