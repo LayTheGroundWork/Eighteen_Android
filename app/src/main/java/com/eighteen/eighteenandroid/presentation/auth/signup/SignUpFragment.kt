@@ -185,7 +185,9 @@ class SignUpFragment : BaseFragment<FragmentSignUpBinding>(FragmentSignUpBinding
         collectInLifecycle(signUpViewModel.signUpResultStateFlow) {
             when (it) {
                 is ModelState.Success -> {
-                    //TODO 로그인 처리?
+                    it.data?.let { authToken ->
+                        myViewModel.completeLogin(authToken = authToken)
+                    }
                     findNavController().navigate(R.id.action_fragmentSignUp_to_fragmentSignUpCompleted)
                 }
                 else -> {

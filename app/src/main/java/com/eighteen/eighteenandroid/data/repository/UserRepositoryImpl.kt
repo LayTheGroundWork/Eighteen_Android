@@ -137,12 +137,17 @@ class UserRepositoryImpl @Inject constructor(
                 schoolData = SchoolRequest(
                     schoolName = school.name,
                     schoolLocation = school.address
-                )
+                ),
+                category = tag.strValue
             )
         }
-        //TODO 응답 값 수정(문의 중)
-        userService.postSignUp(signUpRequest = signUpRequest).mapper {
-            AuthToken("", "")
+        userService.postSignUp(
+            profileImageKeys = signUpInfo.mediaKeys,
+            signUpRequest = signUpRequest
+        ).headers().run {
+            safeLet(get(HEADER_AUTHORIZATION), get(HEADER_REFRESH)) { accessToken, refreshToken ->
+                AuthToken(accessToken = accessToken, refreshToken = refreshToken)
+            } ?: throw Exception("token must not be null")
         }
     }
 

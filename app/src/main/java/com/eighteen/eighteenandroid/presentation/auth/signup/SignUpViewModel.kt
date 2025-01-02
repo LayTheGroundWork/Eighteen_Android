@@ -6,10 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eighteen.eighteenandroid.common.enums.Tag
 import com.eighteen.eighteenandroid.common.safeLet
+import com.eighteen.eighteenandroid.common.toByteArray
 import com.eighteen.eighteenandroid.domain.model.AuthToken
+import com.eighteen.eighteenandroid.domain.model.MediaFile
+import com.eighteen.eighteenandroid.domain.model.MediaType
 import com.eighteen.eighteenandroid.domain.model.School
 import com.eighteen.eighteenandroid.domain.model.SignUpInfo
 import com.eighteen.eighteenandroid.domain.usecase.SignUpUseCase
+import com.eighteen.eighteenandroid.domain.usecase.UploadMediaFilesUseCase
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpAction
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpEditMediaAction
 import com.eighteen.eighteenandroid.presentation.auth.signup.model.SignUpMedia
@@ -27,12 +31,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     private val signUpUseCase: SignUpUseCase,
+    private val uploadMediaFilesUseCase: UploadMediaFilesUseCase
 ) : ViewModel(),
     SignUpViewModelContentInterface {
     private val _actionEventLiveData = MutableLiveData<Event<SignUpAction>>()
@@ -127,12 +133,21 @@ class SignUpViewModel @Inject constructor(
         signUpJob = viewModelScope.launch {
             safeLet(birth, school) { birth, school ->
                 _signUpResultStateFlow.value = ModelState.Loading()
+                val uploadMediaResult = uploadMediaFilesUseCase.invoke(
+                    uniqueId = id,
+                    mediaFiles = mediasStateFlow.value.medias.map { it.toMediaFiles() }).onFailure {
+                    _signUpResultStateFlow.value = ModelState.Error(throwable = it)
+                    return@launch
+                }
                 val birthDayString = birth.run {
                     "${get(Calendar.YEAR)}-${get(Calendar.MONTH)}-${get(Calendar.DATE)}"
                 }
+                //TODO tag 필수 필드인지 확인 필요
                 val signUpInfo = SignUpInfo(
                     phoneNumber = phoneNumber,
-                    uniqueId = id, nickName = nickName, birthDay = birthDayString, school = school
+                    uniqueId = id, nickName = nickName, birthDay = birthDayString, school = school,
+                    tag = tag!!,
+                    mediaKeys = uploadMediaResult.getOrNull() ?: emptyList()
                 )
                 signUpUseCase.invoke(signUpInfo = signUpInfo).onSuccess {
                     _signUpResultStateFlow.value = ModelState.Success(data = it)
@@ -140,6 +155,18 @@ class SignUpViewModel @Inject constructor(
                     _signUpResultStateFlow.value = ModelState.Error(throwable = it)
                 }
             }
+        }
+    }
+
+    private fun SignUpMedia.toMediaFiles() = when (this) {
+        is SignUpMedia.Image -> {
+            MediaFile.ByteArrayMedia(
+                byteArray = this.imageBitmap.toByteArray(),
+                mediaType = MediaType.IMAGE
+            )
+        }
+        is SignUpMedia.Video -> {
+            MediaFile.FileMedia(file = File(this.uriString), mediaType = MediaType.VIDEO)
         }
     }
 

@@ -85,7 +85,7 @@ object ApiModule {
             chain.proceed(request.build())
         }.addNetworkInterceptor(loggingInterceptor).build()
         return Retrofit.Builder().addConverterFactory(MoshiConverterFactory.create(moshi))
-            .client(okHttpClient).build()
+            .client(okHttpClient).baseUrl(BASE_URL).build()
     }
 
 
