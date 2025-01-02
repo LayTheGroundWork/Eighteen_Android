@@ -29,7 +29,6 @@ class MediaFileRepositoryImpl @Inject constructor(
         uniqueId: String,
         mediaFiles: List<MediaFile>
     ): Result<List<String>> {
-        //TODO fileName 문의
         val postMediaResult = mediaFileService.postMediaUpload(
             uniqueId = uniqueId,
             fileNames = mediaFiles.mapIndexed { index, mediaFile -> mediaFile.createFileName(index = index) })
