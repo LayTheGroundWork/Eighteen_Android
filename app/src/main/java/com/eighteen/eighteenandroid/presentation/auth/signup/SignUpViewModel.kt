@@ -131,7 +131,7 @@ class SignUpViewModel @Inject constructor(
     override fun requestSignUp() {
         if (signUpJob?.isCompleted == false) return
         signUpJob = viewModelScope.launch {
-            safeLet(birth, school) { birth, school ->
+            safeLet(birth, school, tag) { birth, school, tag ->
                 _signUpResultStateFlow.value = ModelState.Loading()
                 val uploadMediaResult = uploadMediaFilesUseCase.invoke(
                     uniqueId = id,
@@ -142,11 +142,10 @@ class SignUpViewModel @Inject constructor(
                 val birthDayString = birth.run {
                     "${get(Calendar.YEAR)}-${get(Calendar.MONTH)}-${get(Calendar.DATE)}"
                 }
-                //TODO tag 필수 필드인지 확인 필요
                 val signUpInfo = SignUpInfo(
                     phoneNumber = phoneNumber,
                     uniqueId = id, nickName = nickName, birthDay = birthDayString, school = school,
-                    tag = tag!!,
+                    tag = tag,
                     mediaKeys = uploadMediaResult.getOrNull() ?: emptyList()
                 )
                 signUpUseCase.invoke(signUpInfo = signUpInfo).onSuccess {

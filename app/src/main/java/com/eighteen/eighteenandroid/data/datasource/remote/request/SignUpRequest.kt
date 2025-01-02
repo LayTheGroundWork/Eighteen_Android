@@ -1,6 +1,5 @@
 package com.eighteen.eighteenandroid.data.datasource.remote.request
 
-//TODO tournamentJoin 필드 확인 필요
 data class SignUpRequest(
     val phoneNumber: String,
     val uniqueId: String,
