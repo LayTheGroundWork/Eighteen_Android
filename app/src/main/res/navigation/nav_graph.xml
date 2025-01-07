@@ -158,7 +158,7 @@
         tools:layout="@layout/fragment_voting" />
     <fragment
         android:id="@+id/fragmentVotingComplete"
-        android:name="com.eighteen.eighteenandroid.presentation.ranking.voting.VotingCompleteFragment"
+        android:name="com.eighteen.eighteenandroid.presentation.ranking.votingComplete.VotingCompleteFragment"
         android:label="fragment_voting_complete"
         tools:layout="@layout/fragment_voting_complete" />
 

@@ -11,24 +11,35 @@
         style="@style/pretendard_bold_20"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="40dp"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="뷰티" />
 
+    <ImageView
+        android:id="@+id/ivClose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="40dp"
+        android:src="@drawable/ic_close"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_vote_complete_banner"
         android:layout_width="263dp"
         android:layout_height="117dp"
         android:layout_marginTop="110dp"
+        android:clipChildren="true"
+        android:clipToPadding="true"
         app:cardCornerRadius="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:clipChildren="true"
-        android:clipToPadding="true">
+        app:layout_constraintTop_toBottomOf="@id/tvCategoryCompleteTitle"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:layout_width="match_parent"
@@ -77,8 +88,10 @@
             app:cardCornerRadius="10dp">
 
             <ImageView
+                android:id="@+id/iv_winner"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
         </androidx.cardview.widget.CardView>
 
         <TextView
@@ -92,15 +105,46 @@
             android:textColor="@color/white"
             tools:text="김 에스더" />
 
-        <TextView
-            android:id="@+id/tv_school_and_age"
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="10dp"
-            android:layout_marginBottom="23dp"
-            android:textColor="@color/white"
-            tools:text="서울 중학교, 16세" />
+            android:layout_marginBottom="23dp">
+
+            <ImageView
+                android:id="@+id/iv_school_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_profile_school"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_school"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/iv_school_icon"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="서울 중학교, " />
+
+            <TextView
+                android:id="@+id/tv_age"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:gravity="center"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/tv_school"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="16세" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
     <TextView

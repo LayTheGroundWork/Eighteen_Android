@@ -44,6 +44,12 @@
         <item name="android:lineSpacingMultiplier">1.5</item>
     </style>
 
+    <style name="pretendard_bold_18">
+        <item name="android:fontFamily">@font/pretendard_bold</item>
+        <item name="android:textSize">18dp</item>
+        <item name="android:lineSpacingMultiplier">1.5</item>
+    </style>
+
     <style name="pretendard_bold_16">
         <item name="android:fontFamily">@font/pretendard_bold</item>
         <item name="android:textSize">16dp</item>

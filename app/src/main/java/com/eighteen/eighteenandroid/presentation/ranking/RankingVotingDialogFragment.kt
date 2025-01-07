@@ -8,7 +8,9 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.setFragmentResult
 import com.eighteen.eighteenandroid.databinding.FragmentRankingVotingDialogBinding
 import com.eighteen.eighteenandroid.presentation.BaseDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class RankingVotingDialogFragment :
     BaseDialogFragment<FragmentRankingVotingDialogBinding>(FragmentRankingVotingDialogBinding::inflate) {
     private val requestKey by lazy {

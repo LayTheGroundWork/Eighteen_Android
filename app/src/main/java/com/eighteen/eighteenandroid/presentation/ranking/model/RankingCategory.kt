@@ -3,13 +3,13 @@ package com.eighteen.eighteenandroid.presentation.ranking.model
 import com.eighteen.eighteenandroid.presentation.ranking.cardList.model.CardListItem
 
 interface RankingCategory {
-    val id: String
+    val id: Int
 
     fun areItemsTheSame(other: RankingCategory): Boolean
     fun areContentsTheSame(other: RankingCategory): Boolean
 
     data class Category(
-        override val id: String,
+        override val id: Int,
         val categoryTitle: String,
         val cardListItems: List<CardListItem>
     ) : RankingCategory {

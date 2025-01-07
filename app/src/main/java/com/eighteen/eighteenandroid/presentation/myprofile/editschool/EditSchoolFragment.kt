@@ -102,7 +102,9 @@ class EditSchoolFragment :
                     )
                 }
                 is ModelState.Error -> {
-                    //TODO Error 처리
+                    (binding.inEditSchool.rvSearchResult.adapter as? SchoolSearchResultAdapter)?.submitList(
+                        emptyList()
+                    )
                 }
                 is ModelState.Empty -> {
                     //do nothing

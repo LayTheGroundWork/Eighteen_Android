@@ -1,7 +1,11 @@
 package com.eighteen.eighteenandroid.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
 //TODO qna 타입 정의 필요
-enum class QnaType {
+@Parcelize
+enum class QnaType : Parcelable {
     QNA1,
     QNA2,
     QNA3,

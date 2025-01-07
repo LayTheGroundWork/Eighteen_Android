@@ -1,6 +1,10 @@
 package com.eighteen.eighteenandroid.presentation.auth.signup
 
-enum class LoginType {
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+enum class LoginType : Parcelable {
     SIGNUP,
     LOGIN
 }

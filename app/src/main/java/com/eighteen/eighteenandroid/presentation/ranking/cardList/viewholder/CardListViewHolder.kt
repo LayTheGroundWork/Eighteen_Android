@@ -32,7 +32,7 @@ sealed class CardListViewHolder(binding: ViewBinding) : RecyclerView.ViewHolder(
                 .load(winnerModel?.imageUrl)
                 .into(binding.ivWinner)
 
-            binding.tvVote.text = "${winnerModel?.tournamentNumb}회차 우승자"
+            binding.tvVote.text = "${winnerModel?.round}회차 우승자"
         }
     }
 }

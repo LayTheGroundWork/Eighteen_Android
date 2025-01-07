@@ -41,6 +41,7 @@
     <string name="error_common_content">인터넷 연결 확인 후 다시 시도해주세요.</string>
     <string name="error_network">네트워크 상태가 좋지 않습니다.\n잠시 후 다시 시도해주세요</string>
     <string name="retry">재시도</string>
+    <string name="permission_denied">권한 요청이 거부되었습니다.</string>
 
     <!-- 로그인/회원가입 -->
     <string name="sign_up_login_title">가입하기</string>

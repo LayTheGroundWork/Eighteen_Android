@@ -1,14 +1,13 @@
 package com.eighteen.eighteenandroid.presentation.ranking.cardList.model
 
 sealed interface CardListItem {
-    val id: String
-    val category: String
+    val id: Int
     fun areItemsTheSame(other: CardListItem): Boolean
     fun areContentsTheSame(other: CardListItem): Boolean
 
     data class VoteCard(
-        override val id: String,
-        override val category: String,
+        override val id: Int,
+        val category: String,
         val illustrationUrl: String
     ) : CardListItem {
         override fun areItemsTheSame(other: CardListItem) =
@@ -19,11 +18,11 @@ sealed interface CardListItem {
     }
 
     data class WinnerCard(
-        override val id: String,
-        override val category: String,
+        override val id: Int,
+        val round: Int,
         val imageUrl: String,
-        val tournamentNumb: Int
     ) : CardListItem {
+
         override fun areItemsTheSame(other: CardListItem) =
             other is CardListItem && this.id == other.id
 

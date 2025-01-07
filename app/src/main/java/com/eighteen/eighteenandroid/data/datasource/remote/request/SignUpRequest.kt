@@ -6,4 +6,6 @@ data class SignUpRequest(
     val nickName: String,
     val birthDay: String,
     val schoolData: SchoolRequest,
+    val category: String,
+    val tournamentJoin: Boolean = true
 )

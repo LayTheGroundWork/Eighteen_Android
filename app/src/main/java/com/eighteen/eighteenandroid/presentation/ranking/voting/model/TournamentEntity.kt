@@ -5,6 +5,8 @@ sealed class TournamentEntity {
     data class Participant(
         val id: String,
         val nickName: String,
+        val school: String,
+        val age: String,
         val imageUrl: String = ""
     ) : TournamentEntity()
 

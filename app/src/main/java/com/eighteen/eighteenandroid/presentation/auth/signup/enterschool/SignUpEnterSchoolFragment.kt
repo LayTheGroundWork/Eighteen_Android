@@ -1,5 +1,8 @@
 package com.eighteen.eighteenandroid.presentation.auth.signup.enterschool
 
+import android.os.Bundle
+import android.view.View
+import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
@@ -44,6 +47,17 @@ class SignUpEnterSchoolFragment :
     private val signUpEnterSchoolViewModel by viewModels<SignUpEnterSchoolViewModel>()
 
     private var textChangeJob: Job? = null
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+    }
+
+    override fun onDestroyView() {
+        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_UNSPECIFIED)
+        super.onDestroyView()
+    }
+
 
     override fun initView() {
         initEditText()
@@ -124,7 +138,9 @@ class SignUpEnterSchoolFragment :
 
                 }
                 is ModelState.Error -> {
-                    //TODO 학교 검색 목록 에러 상태 처리
+                    (binding.rvSearchResult.adapter as? SchoolSearchResultAdapter)?.submitList(
+                        emptyList()
+                    )
                 }
                 is ModelState.Empty -> {
                     //do nothing

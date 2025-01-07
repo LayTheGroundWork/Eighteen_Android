@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,42 +13,118 @@ import android.view.ViewTreeObserver
 import androidx.cardview.widget.CardView
 import androidx.core.view.isInvisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.databinding.FragmentVotingBinding
 import com.eighteen.eighteenandroid.presentation.BaseFragment
-import com.eighteen.eighteenandroid.presentation.ranking.RankingFragment
-import com.eighteen.eighteenandroid.presentation.ranking.RankingVotingDialogFragment
-import com.eighteen.eighteenandroid.presentation.ranking.cardList.viewholder.CardListViewHolder
+import com.eighteen.eighteenandroid.presentation.common.ModelState
+import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
+import com.eighteen.eighteenandroid.presentation.common.imageloader.ImageLoader
 import com.eighteen.eighteenandroid.presentation.ranking.voting.model.TournamentEntity
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class VotingFragment : BaseFragment<FragmentVotingBinding>(FragmentVotingBinding::inflate) {
-    private val viewModel: VotingViewModel by viewModels()
-    private var category: String? = ""
+    //    private val viewModel: VotingViewModel by viewModels()
+    private var category: String = ""
+
+    @Inject
+    lateinit var assistedFactory: VotingViewModel.VotingAssistedFactory
+    private val votingViewModel by viewModels<VotingViewModel>(
+        factoryProducer = {
+            VotingViewModel.Factory(
+                assistedFactory = assistedFactory,
+                thisWeekTournamentNo = 24,
+                category = category
+            )
+        }
+    )
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        category = arguments?.getString("selectedCategory")
+        category = arguments?.getString("selectedCategory").toString()
         binding.tvCategoryTitle.text = category
+        binding.ivClose.setColorFilter(Color.WHITE)
+        binding.tvRound.text = "16강"
     }
 
     override fun initView() {
         initObservers()
-        viewModel.setupParticipants()
+        votingViewModel.setupParticipants()
     }
 
     private fun initObservers() {
-        lifecycleScope.launch {
-            viewModel.currentMatch.collect { match ->
+        collectInLifecycle(votingViewModel.thisWeekParticipants) {
+            when (it) {
+                is ModelState.Loading -> {
+                    //TODO 로딩 처리
+                }
+
+                is ModelState.Success -> {
+                    Log.d("VotingFragment", it.data.toString())
+                }
+
+                is ModelState.Error -> {
+                    Log.e(
+                        "VotingFragment",
+                        "Error get this week participants",
+                        it.throwable
+                    )
+                }
+
+                else -> {}
+            }
+        }
+
+        collectInLifecycle(votingViewModel.progress) {
+            when (it) {
+                is ModelState.Loading -> {
+                    //TODO 로딩 처리
+                }
+
+                is ModelState.Success -> {
+                    binding.lpbProgress.progress = it.data ?: 0
+                    // 라운드 정보 업데이트
+                    val roundName = when (votingViewModel.currentRound) {
+                        16 -> "16강"
+                        8 -> "8강"
+                        4 -> "4강"
+                        2 -> "결승"
+                        else -> "알 수 없음"
+                    }
+                    binding.tvRound.text = "$roundName"
+
+                    Log.d("VotingFragment", "Progress value: ${it.data}")
+                }
+
+                is ModelState.Error -> {}
+
+                else -> {}
+            }
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            votingViewModel.currentMatch.collect { match ->
                 match?.let { showCurrentMatch(it) }
             }
         }
 
-        lifecycleScope.launch {
-            viewModel.isRoundComplete.collect { (isComplete, winner) ->
+        viewLifecycleOwner.lifecycleScope.launch {
+            votingViewModel.isRoundComplete.collect { (isComplete, winner) ->
                 if (isComplete) navigateToCompletion(winner)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+
             }
         }
     }
@@ -57,8 +134,17 @@ class VotingFragment : BaseFragment<FragmentVotingBinding>(FragmentVotingBinding
         binding.cvParticipant2.tag = match.participant2
 
         bind {
+            ImageLoader.get().loadUrl(ivParticipant1, match.participant1.imageUrl)
             tvParticipant1Name.text = match.participant1.nickName
+            tvParticipant1School.text = match.participant1.school
+            // TODO birth age로 변환
+            tvParticipant1Age.text = match.participant1.age
+
+            ImageLoader.get().loadUrl(ivParticipant2, match.participant2.imageUrl)
             tvParticipant2Name.text = match.participant2.nickName
+            tvParticipant2School.text = match.participant2.school
+            // TODO birth age로 변환
+            tvParticipant2Age.text = match.participant2.age
         }
         setupNextMatchAnimation()
         setupCardViewAnimations()
@@ -70,6 +156,9 @@ class VotingFragment : BaseFragment<FragmentVotingBinding>(FragmentVotingBinding
                 putString("winnerName", it.nickName)
                 putString("winnerId", it.id)
                 putString("category", category)
+                putString("imgUrl", it.imageUrl)
+                putString("age", it.age)
+                putString("school", it.school)
             }
             findNavController().navigate(R.id.fragmentVotingComplete, bundle)
         }
@@ -222,7 +311,7 @@ class VotingFragment : BaseFragment<FragmentVotingBinding>(FragmentVotingBinding
 
                     val participant = selectedCardView.tag as? TournamentEntity.Participant
                     if (participant != null) {
-                        viewModel.selectWinner(participant)
+                        votingViewModel.selectWinner(participant)
                     } else {
                         Log.e("VotingFragment", "Participant tag is null on selectedCardView")
                     }
