@@ -34,13 +34,6 @@ class UserRepositoryImpl @Inject constructor(
     private val userService: UserService,
     private val preferenceDatastore: DataStore<Preferences>
 ) : UserRepository {
-    override suspend fun fetchAllUser(userType: String, page: Int): Result<UserUseCaseModel> =
-        runCatching {
-            userService.getAllUser(userType, page).mapper {
-                it.data?.toUserUseCaseModel() ?: UserUseCaseModel(emptyList(), 0)
-            }
-        }
-
     override suspend fun fetchCategoryUser(userType: String, category: String, page: Int): Result<UserUseCaseModel> =
         runCatching {
             userService.getCategoryUser(userType, category, page).mapper {
