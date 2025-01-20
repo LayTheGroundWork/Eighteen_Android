@@ -6,6 +6,7 @@ import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.ImageButton
 import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -18,6 +19,7 @@ import com.eighteen.eighteenandroid.databinding.FragmentMainBinding
 import com.eighteen.eighteenandroid.domain.model.Tournament
 import com.eighteen.eighteenandroid.domain.model.User
 import com.eighteen.eighteenandroid.presentation.BaseFragment
+import com.eighteen.eighteenandroid.presentation.MyViewModel
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.createChip
@@ -45,6 +47,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::inflate) {
     private val viewModel by viewModels<MainViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
 
     private lateinit var mainAdapter: MainAdapter
 
@@ -213,8 +216,10 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 stopAutoScroll()
                 val likeStatus = likeBtn.isSelected
 
-                // User Like API 호출
-                viewModel.requestUserLike(likeStatus.not(), likedId = user.userId)
+                requestWithRequiredLogin {
+                    // User Like API 호출
+                    viewModel.requestUserLike(likeStatus.not(), likedId = user.userId)
+                }
             }
 
             /**
@@ -358,6 +363,10 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
             _pageNumList = it
         }
 
+        myViewModel.userSignEventLiveData.observe(viewLifecycleOwner) {
+            getUserData(category)
+        }
+
         collectInLifecycle(viewModel.mainItemStateFlow) { it ->
             when(it) {
                 is ModelState.Loading -> {
@@ -433,6 +442,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
             if (tag == Tag.ALL) { // 화면 최초 진입 시 전체 태그가 클릭된 상태여야함
                 chip.setTagStyle(isBlackBackground = true)
                 selectedChip = chip
+                category = tag
             }
             chip.setOnClickListener { _ ->
                 selectedChip?.setTagStyle(isBlackBackground = false)
