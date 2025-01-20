@@ -63,6 +63,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
     private var autoScrollJob: Job? = null
     private var isAutoScrolling = false
     private var isLoading = false
+    private var isRequestNextPage = false
 
     // 현재 카테고리
     private var selectedChip: Chip? = null     // 칩 버튼 View
@@ -131,6 +132,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                         if (::_pageNumList.isInitialized && !recyclerView.canScrollVertically(1) && lastVisibleItemPosition == itemTotalCount) {
                             if( _pageNumList.isNotEmpty()) {
                                 if(!isLoading) {
+                                    isRequestNextPage = true
                                     val page = _pageNumList.random()
                                     viewModel.removePage(page)
                                     viewModel.requestNextPage(category, page)
@@ -382,12 +384,14 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                     it.data?.let { mainItems ->
                         mainAdapter.updateView(mainItems)
                     }
-                }
-                is ModelState.Error -> {
 
+                    if(isRequestNextPage.not()) {
+                        moveToTop()
+                    }
                 }
                 else ->{
-                    //do nothing
+                    // Error
+                    mainAdapter.removeLoadingView()
                 }
             }
         }
@@ -445,6 +449,8 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 category = tag
             }
             chip.setOnClickListener { _ ->
+                isRequestNextPage = false
+
                 selectedChip?.setTagStyle(isBlackBackground = false)
                 chip.setTagStyle(isBlackBackground = true)
                 selectedChip = chip
