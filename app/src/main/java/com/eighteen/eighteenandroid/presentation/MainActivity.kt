@@ -92,6 +92,8 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 myViewModel.myProfileStateFlow.collect {
                     //TODO placeholder 추가
+                    val myMenu =
+                        binding.bottomNavigationBar.menu.children.find { menu -> menu.itemId == R.id.fragmentMyProfile }
                     if (it.isSuccess()) {
                         Glide.with(this@MainActivity).asBitmap()
                             .placeholder(R.drawable.ic_launcher_background).circleCrop()
@@ -102,13 +104,14 @@ class MainActivity : AppCompatActivity() {
                                     transition: Transition<in Bitmap>?
                                 ) {
                                     val drawable = BitmapDrawable(resources, resource)
-                                    binding.bottomNavigationBar.menu.children.find { menu -> menu.itemId == R.id.fragmentMyProfile }?.icon =
-                                        drawable
+                                    myMenu?.icon = drawable
                                 }
 
                                 override fun onLoadCleared(placeholder: Drawable?) {
                                 }
                             })
+                    } else {
+                        myMenu?.icon = null
                     }
                 }
             }

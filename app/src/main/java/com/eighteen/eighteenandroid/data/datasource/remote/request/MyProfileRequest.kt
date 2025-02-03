@@ -1,19 +1,15 @@
 package com.eighteen.eighteenandroid.data.datasource.remote.request
 
-import com.eighteen.eighteenandroid.data.datasource.remote.response.QuestionResponse
-import com.eighteen.eighteenandroid.data.datasource.remote.response.SnsPlatformResponse
+import com.squareup.moshi.JsonClass
 
+//TODO 미디어 수정(서버 미구현)
+@JsonClass(generateAdapter = true)
 data class MyProfileRequest(
+    val mediaUrl: List<String>,
     val nickName: String?,
-    val schoolData: SchoolData?,
-    val snsPlatform: SnsPlatformResponse?,
+    val schoolData: SchoolRequest?,
+    val snsPlatform: SnsPlatformRequest?,
     val mbti: String?,
     val introduction: String?,
-    val questions: List<QuestionResponse>
-) {
-    //TODO school response 수정 필요
-    data class SchoolData(
-        val schoolName: String,
-        val schoolLocation: String
-    )
-}
+    val questions: List<QuestionRequest>
+)

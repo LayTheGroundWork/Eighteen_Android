@@ -146,7 +146,7 @@
         android:id="@+id/fragmentRanking"
         android:name="com.eighteen.eighteenandroid.presentation.ranking.RankingFragment"
         android:label="fragment_ranking"
-        tools:layout="@layout/fragment_ranking" >
+        tools:layout="@layout/fragment_ranking">
         <action
             android:id="@+id/action_fragmentRanking_to_fragmentRankingResult"
             app:destination="@id/fragmentRankingResult" />
@@ -191,4 +191,15 @@
         android:name="com.eighteen.eighteenandroid.presentation.ranking.RankingResultFragment"
         android:label="RankingResultFragment"
         tools:layout="@layout/fragment_ranking_result" />
+    <fragment
+        android:id="@+id/fragmentSetting"
+        android:name="com.eighteen.eighteenandroid.presentation.myprofile.setting.SettingFragment"
+        android:label="fragment_setting"
+        tools:layout="@layout/fragment_setting" />
+    <fragment
+        android:id="@+id/fragmentManagingInfo"
+        android:name="com.eighteen.eighteenandroid.presentation.myprofile.setting.managinginfo.ManagingInfoFragment"
+        android:label="fragment_managing_info"
+        tools:layout="@layout/fragment_managing_info" />
+
 </navigation>

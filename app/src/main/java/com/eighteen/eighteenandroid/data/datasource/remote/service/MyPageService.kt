@@ -9,7 +9,6 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface MyPageService {
-    //TODO header 적용
     @POST("/v1/api/my-page/update")
     suspend fun postMyPageUpdate(@Body myProfileRequest: MyProfileRequest): Response<ApiResult<String?>>
 

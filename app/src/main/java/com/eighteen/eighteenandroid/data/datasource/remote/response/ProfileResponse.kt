@@ -5,7 +5,6 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class ProfileResponse(
     val id: Int,
-    //TODO 미디어 응답 값 확인
     val profileImages: List<String>?,
     val likeCount: Int?,
     val nickName: String?,

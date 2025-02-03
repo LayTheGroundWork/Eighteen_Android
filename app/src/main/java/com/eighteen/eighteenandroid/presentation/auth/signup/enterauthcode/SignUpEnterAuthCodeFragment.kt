@@ -195,6 +195,7 @@ class SignUpEnterAuthCodeFragment :
                         } else {
                             // 로그인 실패
                             signUpViewModelContentInterface.requestLogin(authToken = null)
+                            signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.ERROR_DIALOG)
                         }
                     }
                 }

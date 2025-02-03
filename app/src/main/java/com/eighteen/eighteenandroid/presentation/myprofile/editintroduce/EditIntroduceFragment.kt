@@ -145,7 +145,6 @@ class EditIntroduceFragment :
     private fun updateNextButton() {
         val buttonTextRes = when (editIntroduceViewModel.pageStateFlow.value) {
             EditIntroducePage.MBTI -> {
-                //TODO mbti 다 선택됐을 때 string 문의
                 if (editIntroduceViewModel.selectedMbtiType.size == 4) R.string.completed
                 else R.string.pass
             }

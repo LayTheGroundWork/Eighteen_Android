@@ -65,8 +65,7 @@ class MyProfileFragment :
     }
 
     override fun onClickSetting() {
-        //TODO 설정화면 이동
-        Log.d("MyProfileFragment", "onClickSetting")
+        findNavController().navigate(R.id.fragmentSetting)
     }
 
     override fun onClickEditMedia() {

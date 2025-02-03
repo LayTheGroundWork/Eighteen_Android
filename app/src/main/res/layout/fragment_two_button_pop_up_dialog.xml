@@ -34,6 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:gravity="center"
             android:textColor="@color/black"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -47,6 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:gravity="center"
             android:textColor="@color/grey_02"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -54,39 +56,50 @@
             app:layout_goneMarginTop="0dp"
             tools:text="content" />
 
-        <TextView
-            android:id="@+id/tvBtnReject"
-            style="@style/pretendard_regular_16"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvBtnReject"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:background="@drawable/bg_rect_grey_01_r20"
-            android:gravity="center"
-            android:padding="13dp"
-            android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="@id/tvBtnConfirm"
-            app:layout_constraintEnd_toStartOf="@id/tvBtnConfirm"
-            app:layout_constraintHorizontal_weight="118"
+            app:cardBackgroundColor="@color/grey_01"
+            app:cardCornerRadius="20dp"
+            app:layout_constraintBottom_toBottomOf="@id/cvBtnConfirm"
+            app:layout_constraintEnd_toStartOf="@id/cvBtnConfirm"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvBtnConfirm"
-            tools:text="아니요" />
+            app:layout_constraintTop_toTopOf="@id/cvBtnConfirm">
 
-        <TextView
-            android:id="@+id/tvBtnConfirm"
-            style="@style/pretendard_bold_16"
+            <TextView
+                android:id="@+id/tvBtnReject"
+                style="@style/pretendard_regular_16"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="13dp"
+                android:textColor="@color/white"
+                tools:text="아니요" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvBtnConfirm"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="25dp"
-            android:background="@drawable/bg_rect_main_color_r20"
-            android:gravity="center"
-            android:padding="13dp"
-            android:textColor="@color/white"
+            android:layout_marginTop="30dp"
+            app:cardBackgroundColor="@color/main_color"
+            app:cardCornerRadius="20dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_weight="154"
-            app:layout_constraintStart_toEndOf="@id/tvBtnReject"
-            app:layout_constraintTop_toBottomOf="@id/tvContent"
-            tools:text="좋아요!" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintStart_toEndOf="@id/cvBtnReject"
+            app:layout_constraintTop_toBottomOf="@id/tvContent">
 
+            <TextView
+                android:id="@+id/tvBtnConfirm"
+                style="@style/pretendard_bold_16"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="13dp"
+                android:textColor="@color/white"
+                tools:text="좋아요!" />
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

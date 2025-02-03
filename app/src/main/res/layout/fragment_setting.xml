@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?><!-- TODO 설정화면 뭐 들어가는지 확인 필요(현재 디자인대로 구현해 놓은 상태) -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clHeader"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/header_height"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ivBtnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="28dp"
+            android:src="@drawable/ic_previous"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/black" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            style="@style/pretendard_bold_20"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/my_profile_setting_title"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ScrollView
+        android:id="@+id/svContent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/clHeader">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="28dp"
+            android:paddingBottom="90dp">
+
+            <TextView
+                android:id="@+id/tvManagingInfoTitle"
+                style="@style/pretendard_bold_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="@string/my_profile_setting_managing_info"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/ivBtnManagingInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_more"
+                app:layout_constraintBottom_toBottomOf="@id/tvManagingInfoTitle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvManagingInfoTitle"
+                app:tint="@color/grey_01" />
+
+            <View
+                android:id="@+id/vDividerFirst"
+                android:layout_width="match_parent"
+                android:layout_height="7dp"
+                android:layout_marginTop="40dp"
+                android:background="@color/white_grey"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvManagingInfoTitle" />
+
+            <TextView
+                android:id="@+id/tvServiceSettingTitle"
+                style="@style/pretendard_bold_18"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="40dp"
+                android:text="@string/my_profile_setting_service_setting_title"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/vDividerFirst" />
+
+            <TextView
+                android:id="@+id/tvAlarmSetting"
+                style="@style/pretendard_bold_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/my_profile_setting_service_alarm"
+                android:textColor="@color/black"
+                app:layout_constraintBottom_toBottomOf="@id/scAlarmSetting"
+                app:layout_constraintStart_toStartOf="@id/tvServiceSettingTitle"
+                app:layout_constraintTop_toTopOf="@id/scAlarmSetting" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/scAlarmSetting"
+                android:layout_width="55dp"
+                android:layout_height="31dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_switch_track"
+                android:thumb="@drawable/bg_switch_thumb"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvServiceSettingTitle"
+                app:trackTint="@android:color/transparent" />
+
+            <TextView
+                android:id="@+id/tvParticipantTournament"
+                style="@style/pretendard_bold_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/my_profile_setting_service_participate_tournament"
+                android:textColor="@color/black"
+                app:layout_constraintBottom_toBottomOf="@id/scParticipantTournament"
+                app:layout_constraintStart_toStartOf="@id/tvServiceSettingTitle"
+                app:layout_constraintTop_toTopOf="@id/scParticipantTournament" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/scParticipantTournament"
+                android:layout_width="55dp"
+                android:layout_height="31dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_switch_track"
+                android:thumb="@drawable/bg_switch_thumb"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/scAlarmSetting"
+                app:trackTint="@android:color/transparent" />
+
+            <TextView
+                android:id="@+id/tvBlockedUsers"
+                style="@style/pretendard_bold_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="30dp"
+                android:text="@string/my_profile_setting_blocked_users"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/scParticipantTournament" />
+
+            <TextView
+                android:id="@+id/tvAutoPlay"
+                style="@style/pretendard_bold_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="30dp"
+                android:text="@string/my_profile_setting_video_auto_play"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvBlockedUsers" />
+
+            <TextView
+                android:id="@+id/tvAutoPlayOption"
+                style="@style/pretendard_regular_14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:textColor="@color/main_color"
+                app:layout_constraintBottom_toBottomOf="@id/tvAutoPlay"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvAutoPlay"
+                tools:text="wi-fi에서만" />
+
+            <View
+                android:id="@+id/vDividerSecond"
+                android:layout_width="match_parent"
+                android:layout_height="7dp"
+                android:layout_marginTop="40dp"
+                android:background="@color/white_grey"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvAutoPlay" />
+
+            <TextView
+                android:id="@+id/tvInfoSettingTitle"
+                style="@style/pretendard_bold_18"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="40dp"
+                android:text="@string/my_profile_setting_info_title"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/vDividerSecond" />
+
+            <TextView
+                android:id="@+id/tvTermsOfservice"
+                style="@style/pretendard_bold_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/terms_of_service"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvInfoSettingTitle" />
+
+            <ImageView
+                android:id="@+id/ivBtnTermsOfService"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_more"
+                app:layout_constraintBottom_toBottomOf="@id/tvTermsOfservice"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvTermsOfservice"
+                app:tint="@color/grey_01" />
+
+            <TextView
+                android:id="@+id/tvPrivacyPolicy"
+                style="@style/pretendard_bold_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="30dp"
+                android:text="@string/privacy_policy"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvTermsOfservice" />
+
+            <ImageView
+                android:id="@+id/ivBtnPrivacyPolicy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_more"
+                app:layout_constraintBottom_toBottomOf="@id/tvPrivacyPolicy"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvPrivacyPolicy"
+                app:tint="@color/grey_01" />
+
+            <TextView
+                android:id="@+id/tvAppVersion"
+                style="@style/pretendard_bold_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="30dp"
+                android:text="@string/my_profile_setting_info_app_version"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvPrivacyPolicy" />
+
+            <TextView
+                android:id="@+id/tvAppVersionText"
+                style="@style/pretendard_regular_14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:textColor="@color/main_color"
+                app:layout_constraintBottom_toBottomOf="@id/tvAppVersion"
+                app:layout_constraintStart_toEndOf="@id/tvAppVersion"
+                app:layout_constraintTop_toTopOf="@id/tvAppVersion"
+                tools:text="1.12.0" />
+
+            <TextView
+                android:id="@+id/tvBtnUpdate"
+                style="@style/pretendard_regular_14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="9dp"
+                android:text="@string/my_profile_setting_info_app_update"
+                android:textColor="@color/main_color"
+                app:layout_constraintBottom_toBottomOf="@id/ivBtnAppVersion"
+                app:layout_constraintEnd_toStartOf="@id/ivBtnAppVersion"
+                app:layout_constraintTop_toTopOf="@id/ivBtnAppVersion" />
+
+            <ImageView
+                android:id="@+id/ivBtnAppVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_more"
+                app:layout_constraintBottom_toBottomOf="@id/tvAppVersion"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvAppVersion"
+                app:tint="@color/grey_01" />
+
+            <TextView
+                android:id="@+id/tvCustomerService"
+                style="@style/pretendard_bold_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="30dp"
+                android:text="@string/my_profile_setting_customer_service"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvAppVersion" />
+
+            <ImageView
+                android:id="@+id/ivBtnCustomerService"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_more"
+                app:layout_constraintBottom_toBottomOf="@id/tvCustomerService"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvCustomerService"
+                app:tint="@color/grey_01" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,8 +1,9 @@
 package com.eighteen.eighteenandroid.data.repository
 
 import com.eighteen.eighteenandroid.data.datasource.remote.request.MyProfileRequest
-import com.eighteen.eighteenandroid.data.datasource.remote.response.QuestionResponse
-import com.eighteen.eighteenandroid.data.datasource.remote.response.SnsPlatformResponse
+import com.eighteen.eighteenandroid.data.datasource.remote.request.QuestionRequest
+import com.eighteen.eighteenandroid.data.datasource.remote.request.SchoolRequest
+import com.eighteen.eighteenandroid.data.datasource.remote.request.SnsPlatformRequest
 import com.eighteen.eighteenandroid.data.datasource.remote.service.MyPageService
 import com.eighteen.eighteenandroid.data.mapper.MyPageMapper.toProfile
 import com.eighteen.eighteenandroid.data.mapper.mapper
@@ -27,9 +28,9 @@ class MyPageRepositoryImpl @Inject constructor(private val myPageService: MyPage
         val myProfileRequest = MyProfileRequest(
             nickName = nickName,
             schoolData = school?.let {
-                MyProfileRequest.SchoolData(schoolName = it.name, schoolLocation = it.address)
+                SchoolRequest(schoolName = it.name, schoolLocation = it.address)
             },
-            snsPlatform = SnsPlatformResponse(
+            snsPlatform = SnsPlatformRequest(
                 instagram = snsInfo.find { it.type == SnsInfo.SnsType.INSTAGRAM }?.id,
                 x = snsInfo.find { it.type == SnsInfo.SnsType.X }?.id,
                 tiktok = snsInfo.find { it.type == SnsInfo.SnsType.TIKTOK }?.id,
@@ -39,15 +40,16 @@ class MyPageRepositoryImpl @Inject constructor(private val myPageService: MyPage
             introduction = introduction,
             //TODO 질문 이름 적용
             questions = questions.map {
-                QuestionResponse(
+                QuestionRequest(
                     question = it.question.name,
                     answer = it.answer
                 )
-            }
+            },
+            //TODO 미디어 수정 적용(서버 미구현)
+            mediaUrl = emptyList()
         )
-        //TODO 응답 값 확인
         myPageService.postMyPageUpdate(myProfileRequest).mapper {
-            ""
+            it.data
         }
     }
 

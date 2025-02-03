@@ -7,6 +7,7 @@ import com.eighteen.eighteenandroid.data.datasource.remote.response.UserDto
 import com.eighteen.eighteenandroid.data.datasource.remote.response.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -42,4 +43,10 @@ interface UserService {
 
     @GET("/v1/api/teen/{userType}/famous/{category}")
     suspend fun getPopularUser(@Path("userType") userType: String, @Path("category") category: String): Response<ApiResult<List<UserDto>>>
+
+    @DELETE("/v1/api/user/sign-out")
+    suspend fun signOut(): Response<ApiResult<String>>
+
+    @DELETE("/v1/api/user/delete")
+    suspend fun deleteUser(): Response<ApiResult<String>>
 }

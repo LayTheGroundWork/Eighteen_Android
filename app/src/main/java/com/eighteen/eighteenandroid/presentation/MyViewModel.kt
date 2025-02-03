@@ -10,6 +10,7 @@ import com.eighteen.eighteenandroid.domain.model.Profile
 import com.eighteen.eighteenandroid.domain.model.Qna
 import com.eighteen.eighteenandroid.domain.model.School
 import com.eighteen.eighteenandroid.domain.model.SnsInfo
+import com.eighteen.eighteenandroid.domain.usecase.DeleteAuthTokenUseCase
 import com.eighteen.eighteenandroid.domain.usecase.EditMyProfileUseCase
 import com.eighteen.eighteenandroid.domain.usecase.GetAuthTokenFlowUseCase
 import com.eighteen.eighteenandroid.domain.usecase.GetMyProfileUseCase
@@ -31,6 +32,7 @@ class MyViewModel @Inject constructor(
     private val getMyProfileUseCase: GetMyProfileUseCase,
     private val editMyProfileUseCase: EditMyProfileUseCase,
     private val saveAuthTokenUseCase: SaveAuthTokenUseCase,
+    private val deleteAuthTokenUseCase: DeleteAuthTokenUseCase,
     getAuthTokenFlowUseCase: GetAuthTokenFlowUseCase
 ) : ViewModel() {
     private val _myProfileStateFlow = MutableStateFlow<ModelState<Profile>>(ModelState.Empty())
@@ -65,6 +67,13 @@ class MyViewModel @Inject constructor(
             }.onFailure {
                 _myProfileStateFlow.value = ModelState.Error(throwable = it)
             }
+        }
+    }
+
+    fun completeLogout() {
+        viewModelScope.launch {
+            deleteAuthTokenUseCase.invoke()
+            _myProfileStateFlow.value = ModelState.Empty()
         }
     }
 
