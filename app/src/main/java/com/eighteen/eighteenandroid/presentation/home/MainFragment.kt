@@ -379,14 +379,13 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 }
                 is ModelState.Success -> {
                     isLoading = false
-                    mainAdapter.removeLoadingView()
-
-                    it.data?.let { mainItems ->
-                        mainAdapter.updateView(mainItems)
-                    }
-
                     if(isRequestNextPage.not()) {
                         moveToTop()
+                    }
+
+                    mainAdapter.removeLoadingView()
+                    it.data?.let { mainItems ->
+                        mainAdapter.updateView(mainItems)
                     }
                 }
                 else ->{
@@ -449,7 +448,13 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 category = tag
             }
             chip.setOnClickListener { _ ->
+                if(isLoading) {
+                    // TODO. 토스트 ?
+                    return@setOnClickListener
+                }
+
                 isRequestNextPage = false
+                mainAdapter.removeAllViews()
 
                 selectedChip?.setTagStyle(isBlackBackground = false)
                 chip.setTagStyle(isBlackBackground = true)

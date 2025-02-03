@@ -360,6 +360,10 @@ class MainAdapter(
         }
     }
 
+    fun removeAllViews() {
+        submitList(emptyList())
+    }
+
     fun removeLoadingView() {
         val currentList = currentList.toMutableList()
         if(currentList.lastIndex > 0) currentList.removeAt(currentList.lastIndex)

@@ -3,8 +3,9 @@ package com.eighteen.eighteenandroid.domain.di
 import com.eighteen.eighteenandroid.domain.repository.MyPageRepository
 import com.eighteen.eighteenandroid.domain.repository.UserRepository
 import com.eighteen.eighteenandroid.domain.usecase.CheckIdDuplicationUseCase
-import com.eighteen.eighteenandroid.domain.usecase.GetUserUseCase
+import com.eighteen.eighteenandroid.domain.usecase.GetAnotherUserUseCase
 import com.eighteen.eighteenandroid.domain.usecase.GetMyProfileUseCase
+import com.eighteen.eighteenandroid.domain.usecase.GetPopularUserUseCase
 import com.eighteen.eighteenandroid.domain.usecase.GetUserDetailInfoUseCase
 import com.eighteen.eighteenandroid.domain.usecase.LoginUseCase
 import com.eighteen.eighteenandroid.domain.usecase.SignUpUseCase
@@ -44,7 +45,11 @@ object UserUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetUserUseCase(repository: UserRepository) = GetUserUseCase(repository = repository)
+    fun provideGetAnotherUserUseCase(repository: UserRepository) = GetAnotherUserUseCase(repository = repository)
+
+    @Provides
+    @Singleton
+    fun provideGetPopularUserUseCase(repository: UserRepository) = GetPopularUserUseCase(repository = repository)
 
     @Provides
     @Singleton

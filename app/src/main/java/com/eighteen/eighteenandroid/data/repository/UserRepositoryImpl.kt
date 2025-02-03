@@ -12,6 +12,7 @@ import com.eighteen.eighteenandroid.data.datasource.remote.request.SchoolRequest
 import com.eighteen.eighteenandroid.data.datasource.remote.request.SignUpRequest
 import com.eighteen.eighteenandroid.data.datasource.remote.service.UserService
 import com.eighteen.eighteenandroid.data.mapper.ApiException
+import com.eighteen.eighteenandroid.data.mapper.UserMapper.toUser
 import com.eighteen.eighteenandroid.data.mapper.UserMapper.toUserUseCaseModel
 import com.eighteen.eighteenandroid.data.mapper.mapper
 import com.eighteen.eighteenandroid.domain.model.AuthToken
@@ -34,7 +35,7 @@ class UserRepositoryImpl @Inject constructor(
     private val userService: UserService,
     private val preferenceDatastore: DataStore<Preferences>
 ) : UserRepository {
-    override suspend fun fetchCategoryUser(userType: String, category: String, page: Int): Result<UserUseCaseModel> =
+    override suspend fun getAnotherUser(userType: String, category: String, page: Int): Result<UserUseCaseModel> =
         runCatching {
             userService.getCategoryUser(userType, category, page).mapper {
                 it.data?.toUserUseCaseModel() ?: UserUseCaseModel(emptyList(), 0)
@@ -52,6 +53,13 @@ class UserRepositoryImpl @Inject constructor(
         runCatching {
             userService.postLikeCancelUser(likedId).mapper {
                 it.data ?: throw ApiException.Unknown
+            }
+        }
+
+    override suspend fun getPopularUser(userType: String, category: String): Result<List<User>> =
+        runCatching {
+            userService.getPopularUser(userType, category).mapper {
+                it.data?.map{ userDto -> userDto.toUser() } ?: throw ApiException.Unknown
             }
         }
 

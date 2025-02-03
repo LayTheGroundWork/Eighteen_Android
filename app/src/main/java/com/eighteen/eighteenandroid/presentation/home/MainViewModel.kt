@@ -9,11 +9,13 @@ import com.eighteen.eighteenandroid.common.ResourceProvider
 import com.eighteen.eighteenandroid.common.USER_TYPE_SIGNIN
 import com.eighteen.eighteenandroid.common.USER_TYPE_GUEST
 import com.eighteen.eighteenandroid.common.enums.Tag
+import com.eighteen.eighteenandroid.data.mapper.ApiException
 import com.eighteen.eighteenandroid.domain.model.AboutTeen
 import com.eighteen.eighteenandroid.domain.model.MainItem
 import com.eighteen.eighteenandroid.domain.model.Tournament
-import com.eighteen.eighteenandroid.domain.usecase.GetUserUseCase
+import com.eighteen.eighteenandroid.domain.usecase.GetAnotherUserUseCase
 import com.eighteen.eighteenandroid.domain.usecase.GetAuthTokenFlowUseCase
+import com.eighteen.eighteenandroid.domain.usecase.GetPopularUserUseCase
 import com.eighteen.eighteenandroid.domain.usecase.UserLikeUseCase
 import com.eighteen.eighteenandroid.presentation.common.ModelState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +31,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val resourceProvider: ResourceProvider,
-    private val getUserUseCase: GetUserUseCase,
+    private val getAnotherUserUseCase: GetAnotherUserUseCase,
+    private val getPopularUserUseCase: GetPopularUserUseCase,
     private val getAuthTokenFlowUseCase: GetAuthTokenFlowUseCase,
     private val userLikeUseCase: UserLikeUseCase
 ) : ViewModel() {
@@ -65,43 +68,58 @@ class MainViewModel @Inject constructor(
         val items = mutableListOf<MainItem>()
         _mainItemStateFlow.value = ModelState.Loading()
 
-        // TODO. val popularTeenInitialState (인기 Teen)
-
-        items.addAll(
-            listOf(
-                MainItem.HeaderView(resourceProvider.getString(R.string.main_today_teen)),
-                MainItem.UserListView(
-                    emptyList()
-                ), // TODO. 인기 Teen
-                MainItem.DividerView,
-                MainItem.HeaderView(resourceProvider.getString(R.string.main_about_teen)),
-                MainItem.AboutTeenListView(
-                    listOf(
-                        AboutTeen("Teen", "친구들의 프로필을 투표해보세요!"),
-                        AboutTeen("토너먼트", "투표 결과를 한 눈에 볼 수 있어요!"),
-                        AboutTeen("채팅", "채팅을 통해 친구들과 소통해보세요!"),
-                        AboutTeen("나만의 Teen", "나만의 프로필을 등록해보세요!")
-                    )
-                ), // About Teen List
-                MainItem.DividerView,
-                MainItem.HeaderWithMoreView(resourceProvider.getString(R.string.main_tournament_in_progress)),
-                MainItem.TournamentListView(
-                    listOf(
-                        Tournament.Exercise,
-                        Tournament.Study
-                    )
-                ), // TODO. Tournament List
-                MainItem.DividerView,
-                MainItem.HeaderView(resourceProvider.getString(R.string.main_another_teen))
-            )
-        )
-
         // AuthToken 여부 확인 후 Fetch
         val authToken = getAuthTokenFlowUseCase.invoke().firstOrNull()
-        val anotherTeenInitialState = if (authToken != null) {
-            fetchUser(category, USER_TYPE_SIGNIN, 0)
+
+        // 인기 Teen
+        val popularTeenInitialState = if(authToken != null) {
+            getPopularUser(category, USER_TYPE_SIGNIN)
         } else {
-            fetchUser(category, USER_TYPE_GUEST, 0)
+            getPopularUser(category, USER_TYPE_GUEST)
+        }
+
+        popularTeenInitialState.onSuccess {
+            with(items) {
+                add(MainItem.HeaderView(resourceProvider.getString(R.string.main_today_teen)))
+                add(MainItem.UserListView(it))
+                add(MainItem.DividerView)
+            }
+        }.onFailure {
+            _mainItemStateFlow.value = ModelState.Error(throwable = it)
+        }
+
+        with(items) {
+            add(MainItem.HeaderView(resourceProvider.getString(R.string.main_about_teen)))
+            add(MainItem.AboutTeenListView(
+                listOf(
+                    AboutTeen("Teen", "친구들의 프로필을 투표해보세요!"),
+                    AboutTeen("토너먼트", "투표 결과를 한 눈에 볼 수 있어요!"),
+                    AboutTeen("채팅", "채팅을 통해 친구들과 소통해보세요!"),
+                    AboutTeen("나만의 Teen", "나만의 프로필을 등록해보세요!")
+                )
+            ))
+            add(MainItem.DividerView)
+        }
+
+        // TODO. 토너먼트 목록 API 연결
+        // val tournamentInitialState
+
+        with(items) {
+            add(MainItem.HeaderWithMoreView(resourceProvider.getString(R.string.main_tournament_in_progress)))
+            add(MainItem.TournamentListView(
+                listOf(
+                    Tournament.Exercise,
+                    Tournament.Study
+                )
+            ))
+            add(MainItem.DividerView)
+        }
+
+        // 또 다른 Teen
+        val anotherTeenInitialState = if (authToken != null) {
+            getAnotherUser(category, USER_TYPE_SIGNIN, 0)
+        } else {
+            getAnotherUser(category, USER_TYPE_GUEST, 0)
         }
 
         anotherTeenInitialState.onSuccess {
@@ -116,25 +134,24 @@ class MainViewModel @Inject constructor(
                 _pageNumList.postValue(pages)
             }
 
-            it.users.forEach { user ->
-                items.add(
-                    MainItem.UserView(user)
-                )
-            }
+            with(items) {
+                add(MainItem.HeaderView(resourceProvider.getString(R.string.main_another_teen)))
 
-            _mainItemStateFlow.value = ModelState.Success(items)
+                it.users.forEach { user ->
+                    add(MainItem.UserView(user))
+                }
+            }
         }.onFailure { e ->
             _mainItemStateFlow.value = ModelState.Error(throwable = e)
         }
 
-
-//            if( userDataState is ModelState.Success && aboutTeenDataState is ModelState.Success ) {
-//                // updateMain
-//            } else {
-//                // 에러화면
-//            }
+        // 모두 가져오는 데에 성공하면
+        if(anotherTeenInitialState.isSuccess && popularTeenInitialState.isSuccess) {
+            _mainItemStateFlow.value = ModelState.Success(items)
+        } else {
+            _mainItemStateFlow.value = ModelState.Error(throwable = ApiException.Unknown)
+        }
     }
-
 
     /** 또 다른 Teen 무한 스크롤, 다음 페이지 유저 정보 가져오기 */
     fun requestNextPage(category: Tag, page: Int) {
@@ -148,9 +165,9 @@ class MainViewModel @Inject constructor(
             // AuthToken 여부 확인 후 Fetch
             val authToken = getAuthTokenFlowUseCase.invoke().firstOrNull()
             val anotherTeenInitialState = if (authToken != null) {
-                fetchUser(category, USER_TYPE_SIGNIN, page)
+                getAnotherUser(category, USER_TYPE_SIGNIN, page)
             } else {
-                fetchUser(category, USER_TYPE_GUEST, page)
+                getAnotherUser(category, USER_TYPE_GUEST, page)
             }
 
             anotherTeenInitialState
@@ -177,9 +194,14 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private suspend fun fetchUser(category: Tag, userType: String, page: Int) =
+    private suspend fun getAnotherUser(category: Tag, userType: String, page: Int) =
         viewModelScope.async {
-            getUserUseCase.invoke(category.name, userType, page)
+            getAnotherUserUseCase.invoke(category.name, userType, page)
+        }.await()
+
+    private suspend fun getPopularUser(category: Tag, userType: String) =
+        viewModelScope.async {
+            getPopularUserUseCase.invoke(category.name, userType)
         }.await()
 
     fun requestUserLike(isLike: Boolean, likedId: Int) {

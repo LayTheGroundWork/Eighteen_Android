@@ -3,6 +3,7 @@ package com.eighteen.eighteenandroid.data.datasource.remote.service
 import com.eighteen.eighteenandroid.data.datasource.remote.request.SignUpRequest
 import com.eighteen.eighteenandroid.data.datasource.remote.response.ApiResult
 import com.eighteen.eighteenandroid.data.datasource.remote.response.ProfileDetailResponse
+import com.eighteen.eighteenandroid.data.datasource.remote.response.UserDto
 import com.eighteen.eighteenandroid.data.datasource.remote.response.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -39,4 +40,6 @@ interface UserService {
     @POST("/v1/api/user/like-cancel")
     suspend fun postLikeCancelUser(@Query("likedId") likedId: Int): Response<ApiResult<String>>
 
+    @GET("/v1/api/teen/{userType}/famous/{category}")
+    suspend fun getPopularUser(@Path("userType") userType: String, @Path("category") category: String): Response<ApiResult<List<UserDto>>>
 }

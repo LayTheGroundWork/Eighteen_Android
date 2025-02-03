@@ -9,7 +9,7 @@ import java.time.Period
 import java.time.format.DateTimeFormatter
 
 object UserMapper {
-    private fun UserDto.toUser(): User {
+    fun UserDto.toUser(): User {
         fun calculateAge(birthDay: String): Int {
             // 날짜 포맷터 생성
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
