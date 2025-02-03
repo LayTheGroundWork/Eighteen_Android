@@ -21,10 +21,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object UserUseCaseModule {
-    @Provides
-    @Singleton
-    fun provideUserUseCase(repository: UserRepository): UserUseCase =
-        UserUseCase(repository = repository)
 
     @Provides
     @Singleton
