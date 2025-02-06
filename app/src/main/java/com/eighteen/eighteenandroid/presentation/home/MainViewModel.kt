@@ -68,6 +68,7 @@ class MainViewModel @Inject constructor(
         val items = mutableListOf<MainItem>()
         _mainItemStateFlow.value = ModelState.Loading()
 
+        delay(1500)
         // AuthToken 여부 확인 후 Fetch
         val authToken = getAuthTokenFlowUseCase.invoke().firstOrNull()
 

@@ -363,7 +363,7 @@ class MainAdapter(
     }
 
     fun removeAllViews() {
-        submitList(emptyList())
+        submitList(null)
     }
 
     fun removeLoadingView() {

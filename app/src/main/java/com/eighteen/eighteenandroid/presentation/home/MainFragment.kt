@@ -453,7 +453,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 }
 
                 isRequestNextPage = false
-                mainAdapter.removeAllViews()
 
                 selectedChip?.setTagStyle(isBlackBackground = false)
                 chip.setTagStyle(isBlackBackground = true)
@@ -466,12 +465,10 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 chipGroup.addView(chip)
             }
         }
-
-        // 전체 유저 가져오기
-        // 페이지 0부터
     }
 
     private fun getUserData(tag: Tag) {
+        mainAdapter.removeAllViews()
         viewModel.initMain(tag)
     }
 }
