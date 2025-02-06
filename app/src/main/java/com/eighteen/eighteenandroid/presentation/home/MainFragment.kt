@@ -283,8 +283,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
              * 이전에 보던 인기 Teen 유저로 이동
              */
             override fun scrollToPreviousUser() {
-                val popularUserListViewHolder =
-                    binding.rvMain.findViewHolderOrNull<MainAdapter.CommonViewHolder.PopularUserListViewHolder>()
+                val popularUserListViewHolder = binding.rvMain.findViewHolderOrNull<MainAdapter.CommonViewHolder.PopularUserListViewHolder>()
                 val rvPopularUserList = popularUserListViewHolder?.binding?.rvMainTeenPopularList
 
                 val layoutManager = rvPopularUserList?.layoutManager as? LinearLayoutManager

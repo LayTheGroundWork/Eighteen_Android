@@ -253,7 +253,7 @@ class MainAdapter(
                     }
 
                     popularUserAdapter.submitList(userListView?.userList) {
-                        rvMainTeenPopularList.doOnLayout {
+                        rvMainTeenPopularList.post {
                             listener.scrollToPreviousUser()
                         }
                     }
@@ -348,7 +348,9 @@ class MainAdapter(
     }
 
     fun updateView(list: List<MainItem>) {
-        submitList(list)
+        submitList(list) {
+            listener.scrollToPreviousUser()
+        }
     }
 
     fun addLoadingView(scrollToPosition: (Int) -> Unit) {
