@@ -19,7 +19,7 @@ class MainItemDiffCallBack: DiffUtil.ItemCallback<MainItem>() {
             }
 
             oldItem is MainItem.DividerView && newItem is MainItem.DividerView -> {
-                false
+                true
             }
 
             oldItem is MainItem.AboutTeenListView && newItem is MainItem.AboutTeenListView -> {
@@ -28,6 +28,14 @@ class MainItemDiffCallBack: DiffUtil.ItemCallback<MainItem>() {
 
             oldItem is MainItem.TournamentListView && newItem is MainItem.TournamentListView -> {
                 oldItem.tournamentList == newItem.tournamentList
+            }
+
+            oldItem is MainItem.UserView && newItem is MainItem.UserView -> {
+                oldItem.user.userId == newItem.user.userId || oldItem.user.uniqueId == newItem.user.uniqueId
+            }
+
+            oldItem is MainItem.LoadingView && newItem is MainItem.LoadingView -> {
+                true
             }
 
             else -> false

@@ -69,8 +69,8 @@ class SignUpViewModel @Inject constructor(
     override val pageClearEvent: StateFlow<Event<SignUpPage>> =
         _pageClearEventStateFlow.asStateFlow()
 
-    private val _requestLoginEventLiveData = MutableLiveData<Event<AuthToken>>()
-    val requestLoginEventLiveData: LiveData<Event<AuthToken>> = _requestLoginEventLiveData
+    private val _requestLoginEventLiveData = MutableLiveData<Event<AuthToken?>>()
+    val requestLoginEventLiveData: LiveData<Event<AuthToken?>> = _requestLoginEventLiveData
 
     override var phoneNumber: String = ""
     override var id: String = ""
@@ -191,7 +191,7 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
-    override fun requestLogin(authToken: AuthToken) {
+    override fun requestLogin(authToken: AuthToken?) {
         viewModelScope.launch {
             _requestLoginEventLiveData.value = Event(authToken)
         }

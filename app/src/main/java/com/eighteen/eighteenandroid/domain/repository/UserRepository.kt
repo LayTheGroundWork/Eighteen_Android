@@ -4,10 +4,10 @@ import com.eighteen.eighteenandroid.domain.model.AuthToken
 import com.eighteen.eighteenandroid.domain.model.Profile
 import com.eighteen.eighteenandroid.domain.model.SignUpInfo
 import com.eighteen.eighteenandroid.domain.model.User
+import com.eighteen.eighteenandroid.domain.model.UserUseCaseModel
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
-    suspend fun fetchUserData(): Result<List<User>>
     suspend fun fetchUserDetailInfo(id: String): Result<Profile>
     suspend fun postSignUp(signUpInfo: SignUpInfo): Result<AuthToken>
     suspend fun checkIdDuplication(uniqueId: String): Result<Boolean>
@@ -17,4 +17,8 @@ interface UserRepository {
     suspend fun signOut(): Result<String?>
     suspend fun deleteUser(): Result<String?>
     suspend fun deleteAuthToken()
+    suspend fun getAnotherUser(userType: String, category: String, page: Int): Result<UserUseCaseModel>
+    suspend fun getPopularUser(userType: String, category: String): Result<List<User>>
+    suspend fun postLikeUser(likedId: Int): Result<String>
+    suspend fun postLikeCancelUser(likedId: Int): Result<String>
 }

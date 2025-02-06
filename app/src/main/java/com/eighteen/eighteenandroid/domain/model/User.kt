@@ -1,10 +1,11 @@
 package com.eighteen.eighteenandroid.domain.model
 
 data class User(
+    val userId: Int,
     val userImage: String,
-    val userId: String,
+    val uniqueId: String,
     val userName: String,
     val userAge: String,
     val userSchoolName: String,
-    val tag: String
+    var likeStatus: Boolean
 )

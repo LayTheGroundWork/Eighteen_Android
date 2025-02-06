@@ -1,5 +1,7 @@
 package com.eighteen.eighteenandroid.presentation
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eighteen.eighteenandroid.domain.model.AuthToken
@@ -36,9 +38,11 @@ class MyViewModel @Inject constructor(
     private val _myProfileStateFlow = MutableStateFlow<ModelState<Profile>>(ModelState.Empty())
     val myProfileStateFlow = _myProfileStateFlow.asStateFlow()
 
-    private val _editProfileEventStateFlow =
-        MutableStateFlow<ModelState<Event<Unit>>>(ModelState.Empty())
+    private val _editProfileEventStateFlow = MutableStateFlow<ModelState<Event<Unit>>>(ModelState.Empty())
     val editProfileEventStateFlow = _editProfileEventStateFlow.asStateFlow()
+
+    private val _userSignEventLiveData = MutableLiveData<Event<AuthToken?>>()
+    val userSignEventLiveData: LiveData<Event<AuthToken?>> = _userSignEventLiveData
 
     private var myProfileJob: Job? = null
     private var editMyProfileJob: Job? = null
@@ -52,11 +56,12 @@ class MyViewModel @Inject constructor(
         requestMyProfile()
     }
 
-    fun completeLogin(authToken: AuthToken) {
+    fun completeLogin(authToken: AuthToken?) {
         if (myProfileJob?.isCompleted == false) return
         myProfileJob = viewModelScope.launch {
             _myProfileStateFlow.value = ModelState.Loading()
-            saveAuthTokenUseCase.invoke(authToken)
+            authToken?.let { saveAuthTokenUseCase.invoke(it) }
+            _userSignEventLiveData.value = Event(authToken)
             getMyProfileUseCase.invoke().onSuccess {
                 _myProfileStateFlow.value = ModelState.Success(it)
             }.onFailure {

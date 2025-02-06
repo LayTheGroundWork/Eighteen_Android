@@ -12,6 +12,8 @@ import com.eighteen.eighteenandroid.data.datasource.remote.request.SchoolRequest
 import com.eighteen.eighteenandroid.data.datasource.remote.request.SignUpRequest
 import com.eighteen.eighteenandroid.data.datasource.remote.service.UserService
 import com.eighteen.eighteenandroid.data.mapper.ApiException
+import com.eighteen.eighteenandroid.data.mapper.UserMapper.toUser
+import com.eighteen.eighteenandroid.data.mapper.UserMapper.toUserUseCaseModel
 import com.eighteen.eighteenandroid.data.mapper.mapper
 import com.eighteen.eighteenandroid.domain.model.AuthToken
 import com.eighteen.eighteenandroid.domain.model.Mbti
@@ -23,6 +25,7 @@ import com.eighteen.eighteenandroid.domain.model.School
 import com.eighteen.eighteenandroid.domain.model.SignUpInfo
 import com.eighteen.eighteenandroid.domain.model.SnsLink
 import com.eighteen.eighteenandroid.domain.model.User
+import com.eighteen.eighteenandroid.domain.model.UserUseCaseModel
 import com.eighteen.eighteenandroid.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -32,40 +35,32 @@ class UserRepositoryImpl @Inject constructor(
     private val userService: UserService,
     private val preferenceDatastore: DataStore<Preferences>
 ) : UserRepository {
-    override suspend fun fetchUserData(): Result<List<User>> =
+    override suspend fun getAnotherUser(userType: String, category: String, page: Int): Result<UserUseCaseModel> =
         runCatching {
-//            userService.getUserInfo().mapper {
-//                it.map { userResponse ->
-//                    UserMapper.asUserCaseModel(userResponse)
-//                }
-//            }
+            userService.getCategoryUser(userType, category, page).mapper {
+                it.data?.toUserUseCaseModel() ?: UserUseCaseModel(emptyList(), 0)
+            }
+        }
 
-            listOf(
-                User(
-                    userImage = "https://image.blip.kr/v1/file/021ec61ff1c9936943383b84236a0e69",
-                    userId = "1",
-                    userName = "김 에스더",
-                    userAge = "16",
-                    userSchoolName = "서울 중학교",
-                    tag = "운동"
-                ),
-                User(
-                    userImage = "https://cdn.newsculture.press/news/photo/202308/529742_657577_5726.jpg",
-                    userId = "2",
-                    userName = "김 에스더",
-                    userAge = "16",
-                    userSchoolName = "부천 중학교",
-                    tag = "스터디"
-                ),
-                User(
-                    userImage = "https://mblogthumb-phinf.pstatic.net/MjAyMTEwMzFfMTY1/MDAxNjM1NjUzMTI2NjI3.xXYQteLLoWLKcR9YnXS0Hk_y-DInauMzF25g7FxlcScg.2Y-neBBMVoP2IhcwzX2Zy2HB2d8EnM_cY76FVLuk_1Yg.JPEG.ssun2415/IMG_4148.jpg?type=w800",
-                    userId = "3",
-                    userName = "김 에스더",
-                    userAge = "16",
-                    userSchoolName = "인천 중학교",
-                    tag = "프로젝트"
-                )
-            )
+    override suspend fun postLikeUser(likedId: Int): Result<String> =
+        runCatching {
+            userService.postLikeUser(likedId).mapper {
+                it.data ?: throw ApiException.Unknown
+            }
+        }
+
+    override suspend fun postLikeCancelUser(likedId: Int): Result<String> =
+        runCatching {
+            userService.postLikeCancelUser(likedId).mapper {
+                it.data ?: throw ApiException.Unknown
+            }
+        }
+
+    override suspend fun getPopularUser(userType: String, category: String): Result<List<User>> =
+        runCatching {
+            userService.getPopularUser(userType, category).mapper {
+                it.data?.map{ userDto -> userDto.toUser() } ?: throw ApiException.Unknown
+            }
         }
 
     override suspend fun fetchUserDetailInfo(id: String): Result<Profile> = runCatching {

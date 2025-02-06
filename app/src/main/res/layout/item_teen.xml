@@ -74,8 +74,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginEnd="16dp"
-                android:background="@drawable/bg_oval_main_color"
-                android:src="@drawable/ic_empty_heart"
+                android:background="@drawable/bg_btn_like_selector"
                 app:layout_constraintBottom_toTopOf="@id/btn_setting"
                 app:layout_constraintEnd_toEndOf="parent" />
 

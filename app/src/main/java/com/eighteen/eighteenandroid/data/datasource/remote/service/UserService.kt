@@ -3,6 +3,7 @@ package com.eighteen.eighteenandroid.data.datasource.remote.service
 import com.eighteen.eighteenandroid.data.datasource.remote.request.SignUpRequest
 import com.eighteen.eighteenandroid.data.datasource.remote.response.ApiResult
 import com.eighteen.eighteenandroid.data.datasource.remote.response.ProfileDetailResponse
+import com.eighteen.eighteenandroid.data.datasource.remote.response.UserDto
 import com.eighteen.eighteenandroid.data.datasource.remote.response.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -30,6 +31,18 @@ interface UserService {
 
     @POST("/v1/api/user/sign-in")
     suspend fun postLogin(@Query("phoneNumber") phoneNumber: String): Response<ApiResult<String>>
+
+    @GET("/v1/api/{userType}/find-all/{category}")
+    suspend fun getCategoryUser(@Path("userType") userType: String, @Path("category") category: String, @Query("page") page: Int, @Query("size") size: Int = 10): Response<ApiResult<UserResponse>>
+
+    @POST("/v1/api/user/like")
+    suspend fun postLikeUser(@Query("likedId") likedId: Int): Response<ApiResult<String>>
+
+    @POST("/v1/api/user/like-cancel")
+    suspend fun postLikeCancelUser(@Query("likedId") likedId: Int): Response<ApiResult<String>>
+
+    @GET("/v1/api/teen/{userType}/famous/{category}")
+    suspend fun getPopularUser(@Path("userType") userType: String, @Path("category") category: String): Response<ApiResult<List<UserDto>>>
 
     @DELETE("/v1/api/user/sign-out")
     suspend fun signOut(): Response<ApiResult<String>>

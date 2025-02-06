@@ -22,6 +22,6 @@ class SignUpSelectTagViewModel : ViewModel() {
     }
 
     companion object {
-        private val tags = listOf(Tag.BEAUTY, Tag.EXERCISE, Tag.STUDY, Tag.ART, Tag.GAME, Tag.ETC)
+        private val tags = listOf(Tag.BEAUTY, Tag.SPORT, Tag.STUDY, Tag.ART, Tag.GAME, Tag.ETC)
     }
 }

@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.DisplayMetrics
 import android.view.View
 import android.view.animation.AlphaAnimation
+import android.widget.ImageButton
 import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -14,12 +16,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.eighteen.eighteenandroid.R
 import com.eighteen.eighteenandroid.common.enums.Tag
 import com.eighteen.eighteenandroid.databinding.FragmentMainBinding
-import com.eighteen.eighteenandroid.domain.model.AboutTeen
-import com.eighteen.eighteenandroid.domain.model.MainItem
 import com.eighteen.eighteenandroid.domain.model.Tournament
 import com.eighteen.eighteenandroid.domain.model.User
 import com.eighteen.eighteenandroid.presentation.BaseFragment
+import com.eighteen.eighteenandroid.presentation.MyViewModel
+import com.eighteen.eighteenandroid.presentation.common.ModelState
+import com.eighteen.eighteenandroid.presentation.common.collectInLifecycle
 import com.eighteen.eighteenandroid.presentation.common.createChip
+import com.eighteen.eighteenandroid.presentation.common.dp2Px
 import com.eighteen.eighteenandroid.presentation.common.findViewHolderOrNull
 import com.eighteen.eighteenandroid.presentation.common.setTagStyle
 import com.eighteen.eighteenandroid.presentation.common.showDialogFragment
@@ -43,13 +47,12 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::inflate) {
     private val viewModel by viewModels<MainViewModel>()
+    private val myViewModel by activityViewModels<MyViewModel>()
 
-    private var selectedChip: Chip? = null
     private lateinit var mainAdapter: MainAdapter
 
-    private var userList = listOf<User>()
-    private var aboutTeenList = listOf<AboutTeen>()
-    private var tournamentList = listOf<Tournament>()
+//    private var aboutTeenList = listOf<AboutTeen>()
+//    private var tournamentList = listOf<Tournament>()
 
     private lateinit var mainAdapterListener: MainAdapterListener
 
@@ -59,6 +62,14 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
     private var autoScrollJob: Job? = null
     private var isAutoScrolling = false
+    private var isLoading = false
+    private var isRequestNextPage = false
+
+    // 현재 카테고리
+    private var selectedChip: Chip? = null     // 칩 버튼 View
+    private var category: Tag = Tag.ALL        // 카테고리 정보
+
+    private lateinit var _pageNumList: List<Int>
 
     override fun initView() {
         initChipGroup()
@@ -101,36 +112,49 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
     private fun initMainAdapter() {
         initMainAdapterListener()
 
-        mainAdapter =
-            MainAdapter(context = requireContext(), listener = mainAdapterListener).apply {
-                stateRestorationPolicy =
-                    RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY // 현재 스크롤 위치 저장
+        mainAdapter = MainAdapter(context = requireContext(), listener = mainAdapterListener).apply {
+                stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY // 현재 스크롤 위치 저장
             }
 
         bind {
             with(rvMain) {
                 adapter = mainAdapter
+                itemAnimator = null         // Item Notify animation 제거
                 addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
                     override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                         super.onScrolled(recyclerView, dx, dy)
+
+                        val lastVisibleItemPosition = (recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition()
+                        val itemTotalCount = recyclerView.adapter!!.itemCount-1
+
+                        // 스크롤이 끝에 도달했는지 확인
+                        if (::_pageNumList.isInitialized && !recyclerView.canScrollVertically(1) && lastVisibleItemPosition == itemTotalCount) {
+                            if( _pageNumList.isNotEmpty()) {
+                                if(!isLoading) {
+                                    isRequestNextPage = true
+                                    val page = _pageNumList.random()
+                                    viewModel.removePage(page)
+                                    viewModel.requestNextPage(category, page)
+                                }
+                            }
+                        }
 
                         // 스크롤이 위로 되면 (dy < 0) 버튼 숨기기, 아래로 스크롤 시( dy > 0 ) 버튼 보여주기
                         if (dy > 0 && btnScrollTop.visibility == View.GONE) {
                             btnScrollTop.startAnimation(fadeIn)
                             btnScrollTop.visibility = View.VISIBLE
                         }
-                    }
-
-                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                        super.onScrollStateChanged(recyclerView, newState)
 
                         if (!canScrollVertically(-1)) {
                             isTop = true
                         } else {
                             isTop = false
                         }
+                    }
 
+                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                        super.onScrollStateChanged(recyclerView, newState)
                         val layoutManager = (layoutManager as? LinearLayoutManager)
 
 //                        Log.i("MainScrollStateChanged", "findLastVisible = ${layoutManager?.findLastVisibleItemPosition().toString()}")
@@ -147,7 +171,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
                         when (newState) {
                             RecyclerView.SCROLL_STATE_IDLE -> {
-                                viewModel.pageScrollPosition = getCenterItemPosition(recyclerView)
 
                                 if (isTop && btnScrollTop.isVisible) {
                                     btnScrollTop.startAnimation(fadeOut)
@@ -168,27 +191,14 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
             // Top 버튼
             btnScrollTop.throttleClick(viewLifecycleOwner.lifecycleScope) {
-                appbarLayout.setExpanded(true, true)
-                rvMain.smoothScrollToPosition(0)
+                moveToTop()
             }
         }
+    }
 
-//        livedata.observe() {
-        // page1 -> 10개
-
-        // current
-        // 전체 리스트를 주진 않고
-
-//            current + 10
-//        }
-
-        // 마지막 아이템을 만나면
-
-        // 데이터 함수 호출
-
-        // 라이브데이터 값 바꾸고
-
-        // 뷰 갱신
+    private fun moveToTop() {
+        binding.appbarLayout.setExpanded(true, true)
+        binding.rvMain.scrollToPosition(0)
     }
 
     private fun initMainAdapterListener() {
@@ -204,9 +214,14 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
             /**
              * 유저 좋아요 클릭
              */
-            override fun onUserLikeClicks(user: User) {
+            override fun onUserLikeClicks(likeBtn: ImageButton, user: User) {
                 stopAutoScroll()
-                // TODO. User Like API 호출
+                val likeStatus = likeBtn.isSelected
+
+                requestWithRequiredLogin {
+                    // User Like API 호출
+                    viewModel.requestUserLike(likeStatus.not(), likedId = user.userId)
+                }
             }
 
             /**
@@ -242,7 +257,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
                 when(title) {
                     "Teen" -> bottomNavigationView.selectedItemId = R.id.teenMainFragment
                     "채팅" -> bottomNavigationView.selectedItemId = R.id.fragmentChat
-                    "토너먼트" -> {}
+                    "토너먼트" -> bottomNavigationView.selectedItemId = R.id.fragmentRanking
                     "나만의 Teen" -> bottomNavigationView.selectedItemId = R.id.fragmentMyProfile
                 }
             }
@@ -268,8 +283,7 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
              * 이전에 보던 인기 Teen 유저로 이동
              */
             override fun scrollToPreviousUser() {
-                val popularUserListViewHolder =
-                    binding.rvMain.findViewHolderOrNull<MainAdapter.CommonViewHolder.PopularUserListViewHolder>()
+                val popularUserListViewHolder = binding.rvMain.findViewHolderOrNull<MainAdapter.CommonViewHolder.PopularUserListViewHolder>()
                 val rvPopularUserList = popularUserListViewHolder?.binding?.rvMainTeenPopularList
 
                 val layoutManager = rvPopularUserList?.layoutManager as? LinearLayoutManager
@@ -290,10 +304,6 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
              */
             override fun saveUserPosition(position: Int) {
                 viewModel.popularUserPosition = position
-            }
-
-            override fun saveScrollPosition(position: Int) {
-                viewModel.pageScrollPosition = position
             }
 
             override fun startAutoScroll() {
@@ -345,142 +355,87 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
 
     private fun initMain() {
         initMainAdapter()
-        initData()
-        initUserListObserver()
+        initMainItemObserver()
     }
 
-    private fun initUserListObserver() {
-//        viewModel.mainItems.observe(viewLifecycleOwner) {
-//            mainAdapter.updateView(it)
-//        }
-
-        viewModel.userData.observe(viewLifecycleOwner) {
-            userList = it
-            updateMain()
+    private fun initMainItemObserver() {
+        // 남은 페이지 목록
+        viewModel.pageNumList.observe(viewLifecycleOwner) {
+            _pageNumList = it
         }
-    }
 
-    private fun updateMain() {
-        mainAdapter.updateView(
-            listOf(
-                MainItem.HeaderView(resources.getString(R.string.main_today_teen)),
-                MainItem.UserListView(
-                    userList
-                ), // User List
-                MainItem.DividerView,
-                MainItem.HeaderView(getString(R.string.main_about_teen)),
-                MainItem.AboutTeenListView(
-//                    aboutTeenList
-                    listOf(
-                        AboutTeen("Teen", "친구들의 프로필을 투표해보세요!"),
-                        AboutTeen("토너먼트", "투표 결과를 한 눈에 볼 수 있어요!"),
-                        AboutTeen("채팅", "채팅을 통해 친구들과 소통해보세요!"),
-                        AboutTeen("나만의 Teen", "나만의 프로필을 등록해보세요!")
-                    )
-                ), // About Teen List
-                MainItem.DividerView,
-                MainItem.HeaderWithMoreView(getString(R.string.main_tournament_in_progress)),
-                MainItem.TournamentListView(
-//                    tournamentList
-                    listOf(
-                        Tournament.Exercise,
-                        Tournament.Study
-                    )
-                ), // Tournament List
-                MainItem.DividerView,
-                MainItem.HeaderView(getString(R.string.main_another_teen)),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://image.blip.kr/v1/file/021ec61ff1c9936943383b84236a0e69",
-                        userId = "1",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
-                    )
-                ),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://cdn.newsculture.press/news/photo/202308/529742_657577_5726.jpg",
-                        userId = "2",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
-                    )
-                ),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://mblogthumb-phinf.pstatic.net/MjAyMTEwMzFfMTY1/MDAxNjM1NjUzMTI2NjI3.xXYQteLLoWLKcR9YnXS0Hk_y-DInauMzF25g7FxlcScg.2Y-neBBMVoP2IhcwzX2Zy2HB2d8EnM_cY76FVLuk_1Yg.JPEG.ssun2415/IMG_4148.jpg?type=w800",
-                        userId = "3",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
-                    )
-                )
-            )
-        )
-    }
+        myViewModel.userSignEventLiveData.observe(viewLifecycleOwner) {
+            getUserData(category)
+        }
 
-    private fun initData() {
-        mainAdapter.updateView(
-            listOf(
-                MainItem.UserListView(
-                    emptyList()
-                ), // User List
-                MainItem.DividerView,
-                MainItem.HeaderView(getString(R.string.main_about_teen)),
-                MainItem.AboutTeenListView(
-                    listOf(
-                        AboutTeen("Teen", "친구들의 프로필을 투표해보세요!"),
-                        AboutTeen("토너먼트", "투표 결과를 한 눈에 볼 수 있어요!"),
-                        AboutTeen("채팅", "채팅을 통해 친구들과 소통해보세요!"),
-                        AboutTeen("나만의 Teen", "나만의 프로필을 등록해보세요!")
-                    )
-                ), // About Teen List
-                MainItem.DividerView,
-                MainItem.HeaderWithMoreView(getString(R.string.main_tournament_in_progress)),
-                MainItem.TournamentListView(
-                    listOf(
-                        Tournament.Exercise,
-                        Tournament.Study
-                    )
-                ), // Tournament List
-                MainItem.DividerView,
-                MainItem.HeaderView(getString(R.string.main_another_teen)),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://image.blip.kr/v1/file/021ec61ff1c9936943383b84236a0e69",
-                        userId = "1",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
-                    )
-                ),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://cdn.newsculture.press/news/photo/202308/529742_657577_5726.jpg",
-                        userId = "2",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
-                    )
-                ),
-                MainItem.UserView(
-                    User(
-                        userImage = "https://mblogthumb-phinf.pstatic.net/MjAyMTEwMzFfMTY1/MDAxNjM1NjUzMTI2NjI3.xXYQteLLoWLKcR9YnXS0Hk_y-DInauMzF25g7FxlcScg.2Y-neBBMVoP2IhcwzX2Zy2HB2d8EnM_cY76FVLuk_1Yg.JPEG.ssun2415/IMG_4148.jpg?type=w800",
-                        userId = "3",
-                        userName = "김 에스더",
-                        userAge = "16",
-                        userSchoolName = "서울 중학교",
-                        tag = "운동"
-                    )
-                )
-            )
-        )
+        collectInLifecycle(viewModel.mainItemStateFlow) { it ->
+            when(it) {
+                is ModelState.Loading -> {
+                    isLoading = true
+                    mainAdapter.addLoadingView { lastPosition ->
+                        binding.rvMain.scrollToPosition(lastPosition)
+                    }
+                }
+                is ModelState.Success -> {
+                    isLoading = false
+                    if(isRequestNextPage.not()) {
+                        moveToTop()
+                    }
+
+                    mainAdapter.removeLoadingView()
+                    it.data?.let { mainItems ->
+                        mainAdapter.updateView(mainItems)
+                    }
+                }
+                else ->{
+                    // Error
+                    mainAdapter.removeLoadingView()
+                }
+            }
+        }
+
+        collectInLifecycle(viewModel.userLikeStateFlow) {
+            when(it) {
+                is ModelState.Loading -> {
+
+                }
+                is ModelState.Success -> {
+                    it.data?.let { userId ->
+                        mainAdapter.updateUserLikeStatus(binding.rvMain, userId, isLike = true)
+                    }
+                }
+
+                is ModelState.Error -> {
+
+                }
+
+                else -> {
+                    //do nothing
+                }
+            }
+        }
+
+        collectInLifecycle(viewModel.userLikeCancelStateFlow) {
+            when(it) {
+                is ModelState.Loading -> {
+
+                }
+                is ModelState.Success -> {
+                    it.data?.let { userId ->
+                        mainAdapter.updateUserLikeStatus(binding.rvMain, userId, isLike = false)
+                    }
+                }
+
+                is ModelState.Error -> {
+
+                }
+
+                else -> {
+                    //do nothing
+                }
+            }
+        }
+
     }
 
     private fun initChipGroup() {
@@ -489,11 +444,22 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
             if (tag == Tag.ALL) { // 화면 최초 진입 시 전체 태그가 클릭된 상태여야함
                 chip.setTagStyle(isBlackBackground = true)
                 selectedChip = chip
+                category = tag
             }
             chip.setOnClickListener { _ ->
+                if(isLoading) {
+                    // TODO. 토스트 ?
+                    return@setOnClickListener
+                }
+
+                isRequestNextPage = false
+
                 selectedChip?.setTagStyle(isBlackBackground = false)
                 chip.setTagStyle(isBlackBackground = true)
                 selectedChip = chip
+                category = tag        // 현재 카테고리 값 저장
+
+                getUserData(tag)      // 현재 카테고리에 맞는 데이터 가져오기
             }
             bind {
                 chipGroup.addView(chip)
@@ -501,27 +467,8 @@ class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::infl
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launch {
-            delay(300)
-//            bind {
-//                // 마지막 스크롤 상태로 돌아오기
-//                if (viewModel.pageScrollPosition != -1) {
-//
-//                    rvMain.scrollToPosition(viewModel.pageScrollPosition)
-//
-//                    // LayoutManager에서 해당 위치의 아이템을 중앙에 위치시키도록 오프셋 조정
-//                    rvMain.post {
-//                        val layoutManager = rvMain.layoutManager as LinearLayoutManager
-//                        val viewAtPosition = layoutManager.findViewByPosition(viewModel.pageScrollPosition)
-//                        if (viewAtPosition != null) {
-//                            val offset = (rvMain.height - viewAtPosition.height) / 2
-//                            layoutManager.scrollToPositionWithOffset(viewModel.pageScrollPosition, offset)
-//                        }
-//                    }
-//                }
-//            }
-        }
+    private fun getUserData(tag: Tag) {
+        mainAdapter.removeAllViews()
+        viewModel.initMain(tag)
     }
 }

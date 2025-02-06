@@ -193,6 +193,8 @@ class SignUpEnterAuthCodeFragment :
                         if (data is ConfirmResultModel.LoginSuccess) {
                             signUpViewModelContentInterface.requestLogin(authToken = data.authToken)
                         } else {
+                            // 로그인 실패
+                            signUpViewModelContentInterface.requestLogin(authToken = null)
                             signUpViewModelContentInterface.sendSignUpStatusEvent(event = SignUpStatusEvent.ERROR_DIALOG)
                         }
                     }

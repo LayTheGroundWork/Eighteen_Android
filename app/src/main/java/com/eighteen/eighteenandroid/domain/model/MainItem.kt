@@ -33,4 +33,7 @@ sealed class MainItem{
     data class UserView(
         val user: User
     ): MainItem()
+
+    // LoadingView
+    object LoadingView: MainItem()
 }
